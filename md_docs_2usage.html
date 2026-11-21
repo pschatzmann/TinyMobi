@@ -73,8 +73,8 @@ $(function() {
   <div class="headertitle"><div class="title">Usage</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md21"></a> <a class="el" href="index.html#md_README">Back to the README</a></p>
-<h1><a class="anchor" id="autotoc_md22"></a>
+<div class="textblock"><p><a class="anchor" id="autotoc_md22"></a> <a class="el" href="index.html#md_README">Back to the README</a></p>
+<h1><a class="anchor" id="autotoc_md23"></a>
 Opening a book</h1>
 <div class="fragment"><div class="line"><span class="preprocessor">#include &lt;<a class="code" href="TinyMobi_8h.html">TinyMobi.h</a>&gt;</span></div>
 <div class="line"> </div>
@@ -94,7 +94,7 @@ Opening a book</h1>
 <div class="ttc" id="aclasstinymobi_1_1StreamSource_html"><div class="ttname"><a href="classtinymobi_1_1StreamSource.html">tinymobi::StreamSource</a></div><div class="ttdoc">Source backed by any seekable file with size(), seek(pos) and read(buf, n), e.g. Arduino File (SD,...</div><div class="ttdef"><b>Definition</b> TinyMobi.h:339</div></div>
 <div class="ttc" id="anamespacetinymobi_html_a66430432639a8de303ef8eb59cf10a7aa4cd8413207629a963225f4314b53adcd"><div class="ttname"><a href="namespacetinymobi.html#a66430432639a8de303ef8eb59cf10a7aa4cd8413207629a963225f4314b53adcd">tinymobi::TextMode::Plain</a></div><div class="ttdeci">@ Plain</div></div>
 <div class="ttc" id="anamespacetinymobi_html_a8de84e1f3f7e62f4c7783874dc6cf33da6adf97f83acf6453d4a6a4b1070f3754"><div class="ttname"><a href="namespacetinymobi.html#a8de84e1f3f7e62f4c7783874dc6cf33da6adf97f83acf6453d4a6a4b1070f3754">tinymobi::Error::None</a></div><div class="ttdeci">@ None</div></div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md23"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md24"></a>
 Reading the text</h1>
 <p><code>read()</code> delivers the whole book in reading order. KF8 books (AZW3 and hybrid MOBI) are read as their assembled KF8 text, and the parts follow each other automatically. No format-specific calls are needed.</p>
 <ul>
@@ -102,7 +102,7 @@ Reading the text</h1>
 <li><code>TextMode::Plain</code> removes the tags, turns block tags into newlines and decodes the entities. Use <code>setTextMode()</code> to change the mode.</li>
 <li><code>TextMode::PlainLinks</code> is <code>Plain</code> with markers: each link is wrapped in <code>\x01target\x02text\x03</code> and each heading in <code>\x04...\x05</code>. Pass a target to <code>resolveLink()</code> to get its position. Headings are wrapped in <code>\x04</code> and <code>\x05</code> on their own lines.</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md24"></a>
+<h1><a class="anchor" id="autotoc_md25"></a>
 Bookmarks</h1>
 <p><code>position()</code> returns a <code>Position</code> (a section and an offset in it), and <code>seek()</code> returns to it. <code>rewind()</code> goes back to the start of the book.</p>
 <div class="fragment"><div class="line"><a class="code hl_class" href="classtinymobi_1_1Position.html">tinymobi::Position</a> bookmark = doc.position();</div>
@@ -110,7 +110,7 @@ Bookmarks</h1>
 <div class="line">doc.seek(bookmark);</div>
 <div class="ttc" id="aclasstinymobi_1_1Position_html"><div class="ttname"><a href="classtinymobi_1_1Position.html">tinymobi::Position</a></div><div class="ttdoc">Position in the book text: a section (text record or KF8 part) and an offset in it.</div><div class="ttdef"><b>Definition</b> TinyMobi.h:96</div></div>
 </div><!-- fragment --><p>Seeking into the middle of a KF8 part rebuilds that part up to the offset.</p>
-<h1><a class="anchor" id="autotoc_md25"></a>
+<h1><a class="anchor" id="autotoc_md26"></a>
 Table of contents</h1>
 <div class="fragment"><div class="line">doc.forEachTocEntry([](<span class="keyword">const</span> <a class="code hl_struct" href="structtinymobi_1_1TocEntry.html">tinymobi::TocEntry</a>&amp; e) -&gt; <span class="keywordtype">bool</span> {</div>
 <div class="line">  <span class="comment">// e.title, e.level, e.start (where the section starts) and the tree</span></div>
@@ -120,7 +120,7 @@ Table of contents</h1>
 <div class="ttc" id="astructtinymobi_1_1TocEntry_html"><div class="ttname"><a href="structtinymobi_1_1TocEntry.html">tinymobi::TocEntry</a></div><div class="ttdoc">One entry of the table of contents (NCX index).</div><div class="ttdef"><b>Definition</b> TinyMobi.h:160</div></div>
 </div><!-- fragment --><p><code>tocCount()</code> returns the number of entries, and <code>tocEntry(i, entry)</code> returns one entry. <code>e.start</code> can be passed to <code>seek()</code>. For KF8 books <code>e.start</code> is unknown (<code>section == kNoRecord</code>), see <a class="el" href="md_docs_2limitations.html">Limitations</a>.</p>
 <p>The table of contents is also part of the text: in <code>TextMode::PlainLinks</code> its entries are links, and <code>resolveLink()</code> gives the position of each link, MOBI6 (<code>filepos</code>) and KF8 (<code>kindle:pos</code>).</p>
-<h1><a class="anchor" id="autotoc_md26"></a>
+<h1><a class="anchor" id="autotoc_md27"></a>
 Images</h1>
 <p><code>forEachImageRef()</code> calls a function for every image tag of the book, in reading order. Each <code>ImageRef</code> gives the <code>Position</code> of the tag and the PalmDB record of the image. The reading position is kept.</p>
 <div class="fragment"><div class="line">doc.forEachImageRef([&amp;](<span class="keyword">const</span> <a class="code hl_struct" href="structtinymobi_1_1ImageRef.html">tinymobi::ImageRef</a>&amp; ref) -&gt; <span class="keywordtype">bool</span> {</div>
@@ -132,7 +132,7 @@ Images</h1>
 <div class="ttc" id="anamespacetinymobi_html_aad4c3b54c5a404abc97c2c0f04333029"><div class="ttname"><a href="namespacetinymobi.html#aad4c3b54c5a404abc97c2c0f04333029">tinymobi::kNoRecord</a></div><div class="ttdeci">constexpr uint32_t kNoRecord</div><div class="ttdoc">Value used for &quot;no such record / image&quot;.</div><div class="ttdef"><b>Definition</b> TinyMobi.h:46</div></div>
 <div class="ttc" id="astructtinymobi_1_1ImageRef_html"><div class="ttname"><a href="structtinymobi_1_1ImageRef.html">tinymobi::ImageRef</a></div><div class="ttdoc">An image reference found in the text (recindex or kindle:embed).</div><div class="ttdef"><b>Definition</b> TinyMobi.h:154</div></div>
 <div class="ttc" id="astructtinymobi_1_1ImageRef_html_a94facdf925efb8bb1a6e02757e97d853"><div class="ttname"><a href="structtinymobi_1_1ImageRef.html#a94facdf925efb8bb1a6e02757e97d853">tinymobi::ImageRef::record</a></div><div class="ttdeci">uint32_t record</div><div class="ttdoc">PalmDB record of the image, kNoRecord if invalid.</div><div class="ttdef"><b>Definition</b> TinyMobi.h:156</div></div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md27"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md28"></a>
 Saving the cover</h1>
 <div class="fragment"><div class="line">uint32_t cover = doc.info().coverRecord;   <span class="comment">// tinymobi::kNoRecord if none</span></div>
 <div class="line">uint32_t len = 0;</div>
@@ -144,10 +144,10 @@ Saving the cover</h1>
 <div class="line">  <span class="comment">// and write data to the SD card with that extension</span></div>
 <div class="line">  <span class="keyword">delete</span>[] data;</div>
 <div class="line">}</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md28"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md29"></a>
 Without KF8</h1>
 <p>Microcontrollers that do not need KF8 can use <code>MemoryMobiNoKf8</code> (or <code>MobiDocument&lt;Source, 4096, false&gt;</code>). It drops the 4 KB KF8 source buffer. The book is then read as its MOBI6 text.</p>
-<h1><a class="anchor" id="autotoc_md29"></a>
+<h1><a class="anchor" id="autotoc_md30"></a>
 Arduino example</h1>
 <p><code>examples/serial-reader</code> is a complete sketch. It prints the metadata and the opening text, bookmarks the reading position, and saves the cover to the SD card. It can also be run on the desktop, see <a class="el" href="md_docs_2emulator.html">Running the example on the desktop</a>. </p>
 </div></div><!-- contents -->

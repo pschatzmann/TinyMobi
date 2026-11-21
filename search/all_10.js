@@ -2,7 +2,7 @@ var searchData=
 [
   ['read_0',['read',['../classtinymobi_1_1MemorySource.html#a7436d43f8c4a2c090b4cd2405effa9fb',1,'tinymobi::MemorySource::read()'],['../classtinymobi_1_1StreamSource.html#a4deca7406da44da5b8752082912b62f7',1,'tinymobi::StreamSource::read()'],['../classtinymobi_1_1MobiDocument.html#ac67b92dd9d05d562eabebe43197f4806',1,'tinymobi::MobiDocument::read()']]],
   ['reader_20gui_20mobireaderapp_1',['Reader GUI (MobiReaderApp)',['../md_docs_2gui.html',1,'']]],
-  ['reading_20the_20text_2',['Reading the text',['../md_docs_2usage.html#autotoc_md23',1,'']]],
+  ['reading_20the_20text_2',['Reading the text',['../md_docs_2usage.html#autotoc_md24',1,'']]],
   ['readme_2emd_3',['README.md',['../README_8md.html',1,'']]],
   ['readrecord_4',['readRecord',['../classtinymobi_1_1MobiDocument.html#a039e949f8d75c63047ebd67359277e76',1,'tinymobi::MobiDocument']]],
   ['real_20huff_20cdic_20books_5',['Real HUFF/CDIC books',['../md_docs_2desktop.html#autotoc_md6',1,'']]],
