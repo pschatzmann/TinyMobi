@@ -32,10 +32,20 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(tinyjpeg)
 
+# TinyFonts draws the text (Latin-1 characters with the Lato fonts)
+set(TINYFONTS_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(TINYFONTS_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+FetchContent_Declare(
+  tinyfonts
+  GIT_REPOSITORY https://github.com/pschatzmann/TinyFonts.git
+  GIT_TAG        main
+)
+FetchContent_MakeAvailable(tinyfonts)
+
 find_package(SDL2 REQUIRED)
 
 set(TINYMOBI_EXAMPLE_BOOK "/book.mobi" CACHE FILEPATH "Book to read")
-arduino_sketch(gui-screenshots gui-screenshots.ino LIBRARIES TinyMobi TinyMaterialDesign TinyJPEG SDL2::SDL2
+arduino_sketch(gui-screenshots gui-screenshots.ino LIBRARIES TinyMobi TinyMaterialDesign TinyJPEG TinyFonts SDL2::SDL2
   DEFINITIONS TINYMOBI_BOOK="${TINYMOBI_EXAMPLE_BOOK}")
 target_compile_options(gui-screenshots PRIVATE -include Arduino.h)
 target_compile_definitions(gui-screenshots PRIVATE TINYGPU_AUTO_NAMESPACE TINYMD_AUTO_NAMESPACE ARDUINO IS_DESKTOP)

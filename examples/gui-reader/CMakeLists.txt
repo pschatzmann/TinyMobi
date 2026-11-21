@@ -32,6 +32,16 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(tinyjpeg)
 
+# TinyFonts draws the text (Latin-1 characters with the Lato fonts)
+set(TINYFONTS_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(TINYFONTS_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+FetchContent_Declare(
+  tinyfonts
+  GIT_REPOSITORY https://github.com/pschatzmann/TinyFonts.git
+  GIT_TAG        main
+)
+FetchContent_MakeAvailable(tinyfonts)
+
 find_package(SDL2 REQUIRED)
 
 # A book opened at startup (optional: without one the open dialog is shown) and
@@ -43,7 +53,7 @@ else()
   set(TINYMOBI_EXAMPLE_LIBRARY_DEFAULT "/")
 endif()
 set(TINYMOBI_EXAMPLE_LIBRARY "${TINYMOBI_EXAMPLE_LIBRARY_DEFAULT}" CACHE PATH "Folder of the open dialog")
-arduino_sketch(gui-reader gui-reader.ino LIBRARIES TinyMobi TinyMaterialDesign TinyJPEG SDL2::SDL2
+arduino_sketch(gui-reader gui-reader.ino LIBRARIES TinyMobi TinyMaterialDesign TinyJPEG TinyFonts SDL2::SDL2
   DEFINITIONS TINYMOBI_BOOK="${TINYMOBI_EXAMPLE_BOOK}" TINYMOBI_LIBRARY="${TINYMOBI_EXAMPLE_LIBRARY}")
 target_compile_options(gui-reader PRIVATE -include Arduino.h)
 target_compile_definitions(gui-reader PRIVATE TINYGPU_AUTO_NAMESPACE TINYMD_AUTO_NAMESPACE ARDUINO IS_DESKTOP)

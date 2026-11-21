@@ -30,7 +30,7 @@ from memory or from an SD card, one record at a time, into a fixed buffer.
 - Raw access to any PalmDB record with `readRecord()` and `recordLength()`.
   `imageType()` recognizes JPEG, PNG, GIF and BMP data, so covers can be saved.
 - Image references in the text (`<img recindex>` and `kindle:embed`).
-- Optional reader GUI for TinyMaterialDesign (`src/TinyMobi/MobiReaderApp.h`):
+- Optional reader GUI for TinyMaterialDesign and TinyFonts (`src/TinyMobi/MobiReaderApp.h`):
   page-by-page reading with swipe navigation, tappable links (the table of
   contents is part of the text), headings, a title bar with the page number, a
   system menu with a settings screen (dark mode, navigation buttons, page number),

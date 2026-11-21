@@ -13,6 +13,11 @@
 #include <string>
 #include <vector>
 
+#include "TinyFonts/Fonts/Lato10.h"
+#include "TinyFonts/Fonts/Lato16.h"
+#include "TinyFonts/Fonts/Lato32.h"
+#include "TinyFonts/Fonts/Lato8.h"
+#include "TinyFonts/Integrations/TinyGPU.h"
 #include "TinyMaterialDesign.h"
 #include "TinyMobi.h"
 #include "TinyMobi/MobiReaderCover.h"
@@ -94,6 +99,11 @@ class MobiReaderApp {
   /// \brief Builds the GUI. If the document is open, its first page is shown;
   /// otherwise the open dialog is shown.
   void begin() {
+    // the themes use the TinyFonts fonts (the themes must be set before the app starts)
+    const tinymd::Typography<RGB_T> fonts{&labelFont_, &bodyFont_, &titleFont_, &headlineFont_};
+    darkTheme_.typography = fonts;
+    lightTheme_.typography = fonts;
+    app_.screen().setTheme(dark_ ? darkTheme_ : lightTheme_);  // the screen has its own copy
     app_.begin();
     tinymd::Screen<RGB_T>& screen = app_.screen();
     text_.setRole(tinymd::TypographyRole::kBody);
@@ -917,6 +927,11 @@ class MobiReaderApp {
 
   Doc& doc_;
   // the themes must outlive the app: the screen keeps a pointer to them
+  // the text is drawn with TinyFonts (Latin-1 characters, unlike the bitmap fonts)
+  tinyfonts::TinyGPUFont<RGB_T> labelFont_{Lato8};
+  tinyfonts::TinyGPUFont<RGB_T> bodyFont_{Lato10};
+  tinyfonts::TinyGPUFont<RGB_T> titleFont_{Lato16};
+  tinyfonts::TinyGPUFont<RGB_T> headlineFont_{Lato32};
   tinymd::MaterialTheme<RGB_T> darkTheme_ = tinymd::defaultDarkTheme<RGB_T>();
   tinymd::MaterialTheme<RGB_T> lightTheme_ = tinymd::defaultTheme<RGB_T>();
   tinymd::App<RGB_T> app_;

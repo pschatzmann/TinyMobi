@@ -18,9 +18,28 @@
   "Bookmarks", "Settings", "About" (author, publisher, language and the page
   shown) and, if `onClose` is set, "Close"
 
-The header is optional. It needs TinyMaterialDesign, TinyGPU and
-[TinyJPEG](https://github.com/pschatzmann/TinyJPEG) in addition to TinyMobi.
+The header is optional. It needs TinyMaterialDesign, TinyGPU,
+[TinyJPEG](https://github.com/pschatzmann/TinyJPEG) and
+[TinyFonts](https://github.com/pschatzmann/TinyFonts) in addition to TinyMobi.
 `TinyMobi.h` does not depend on them.
+
+## Fonts
+
+The text is drawn with [TinyFonts](https://github.com/pschatzmann/TinyFonts)
+(the Lato fonts, generated from Lato Regular with the ASCII, Latin-1, euro and
+punctuation sets, so the characters "ü", "ß", bullets, curly quotes and dashes
+are shown):
+
+| Role | Font | Used for |
+|---|---|---|
+| body | Lato10 | the text of the pages |
+| title | Lato16 | the title bar, headings and the title of dialogs |
+| label | Lato8 | buttons and captions |
+| headline | Lato32 | large standalone headings (ASCII only, not used by the reader) |
+
+The fonts are set on the two themes (dark and light) when `begin()` runs.
+Characters outside these sets (for example Greek or Cyrillic letters, or
+symbols) are not in the fonts and are shown as "?".
 
 The JPEG cover is shown full screen, before the first page of text. It is
 scaled to the largest size that fits the screen with its proportions, and
@@ -145,8 +164,10 @@ pages are kept, which is enough for books of several hundred pages.
 
 - The pages are not scrolled. A single word that is taller than the text area is
   clipped.
-- The TinyMaterialDesign bitmap fonts only cover ASCII. Other characters are
-  shown as `?`.
+- The Lato fonts cover ASCII, Latin-1, the euro sign and the general punctuation
+  (bullets, quotes, dashes). Other characters, for example Greek or Cyrillic
+  letters or symbols, are shown as `?`. Other TinyFonts fonts can be used by
+  changing the four font objects in `MobiReaderApp.h`.
 - The book title in the title bar is shortened to the width that is left before
   the page number (or the menu icon).
 - Only JPEG covers are shown. The cover bytes are held in a `std::vector` and
