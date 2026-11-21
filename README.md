@@ -53,8 +53,7 @@ Limitations (DRM, images are not decoded, and others) are listed in
 - [Running the example on the desktop](docs/emulator.md): the Arduino emulator
 - [Limitations](docs/limitations.md): what is not supported
 - [Layout](docs/layout.md): the files of the project
-- API reference: generated with Doxygen (`doxygen Doxyfile`) and published
-  to GitHub Pages on every push to `main`
+- [API reference](https://pschatzmann.github.io/TinyMobi/namespaces.html)`
 - [License](docs/license.md)
 
 ## Installation in Arduino
