@@ -1,0 +1,967 @@
+#pragma once
+/**
+ * @file MobiReaderApp.h
+ * @brief A page-by-page book reader GUI for TinyMaterialDesign.
+ *
+ * This header is optional: it needs TinyMaterialDesign, TinyGPU and TinyJPEG
+ * in addition to TinyMobi.h. TinyMobi.h itself does not depend on them.
+ */
+#include <stdio.h>
+
+#include <functional>
+#include <memory>
+#include <string>
+#include <vector>
+
+#include "TinyMaterialDesign.h"
+#include "TinyMobi.h"
+#include "TinyMobi/MobiReaderCover.h"
+
+namespace tinymobi {
+
+/**
+ * @brief The book reader GUI for TinyMaterialDesign: a full screen JPEG cover,
+ * then the book text one page at a time.
+ *
+ * - Cover: the JPEG cover of the book (if it has one), shown full screen before
+ *   the first page. A tap or a swipe to the left opens the text.
+ * - Text: a title bar with the book title, the page number (optional, see the
+ *   settings) and a system menu (the menu icon in the title bar), and the text
+ *   of the page. Pages are turned
+ *   by swiping left (next) and right (previous). The Previous and Next buttons
+ *   are optional (see the settings).
+ * - System menu: "Go to start", "Bookmarks" (add the shown page, jump to saved
+ *   bookmarks), "Settings", "About" (author, publisher and language) and, if
+ *   onClose is set, "Close". The table of contents is part of the text: its
+ *   links jump to the chapters (see TextMode::PlainLinks).
+ * - Settings: dark mode (on by default) and navigation buttons (off by default).
+ *
+ * The page text is read from the document with read() in plain text mode and
+ * cut so that it fits the text area. Each page start is remembered, so
+ * previous() works after next(). goTo() starts a new page sequence, e.g. at a
+ * table of contents entry.
+ *
+ * Usage:
+ * @code
+ *   tinymobi::FileMobi<File> doc{tinymobi::StreamSource<File>(file)};
+ *   tinymobi::MobiReaderApp<RGB565, tinymobi::FileMobi<File>> gui(DefaultBoard, doc);
+ *
+ *   void setup() {
+ *     doc.open();   // the document must be open
+ *     gui.begin();
+ *   }
+ *   void loop() { gui.update(); }
+ * @endcode
+ *
+ * Limitations: the text pages are not scrolled. A single word that is taller
+ * than the text area is clipped. At most kMaxPages pages can be reached.
+ * Bookmarks are kept for the session only. Links that cannot be resolved are
+ * shown as plain text.
+ */
+template <typename RGB_T = TINYMD_DEFAULT_RGB_T, typename Doc = MemoryMobi>
+class MobiReaderApp {
+ public:
+  /// \brief Number of page starts that are remembered (pages reachable by previous()).
+  static constexpr size_t kMaxPages = 4096;  // page starts remembered (8 bytes each)
+  /// \brief Text read as the candidate for one page, before it is fitted to the screen.
+  static constexpr size_t kPageBytes = 2000;
+
+  /// \brief Called when the user chooses "Close" in the system menu. The item is
+  /// only shown when this callback is set.
+  std::function<void()> onClose;
+
+  /// \brief Lists the entries of a folder for the open dialog. Set by the sketch.
+  std::function<std::vector<tinymd::FileEntry>(const std::string& dir)> listFiles;
+
+  /// \brief Opens the book at path into the document (e.g. file = SD.open(path);
+  /// return doc.open() == Error::None). Set by the sketch.
+  std::function<bool(const std::string& path)> openBook;
+
+  /// \brief The folder the open dialog starts in.
+  std::string libraryDir = "/";
+
+  /// \brief The extensions of the books in the open dialog, e.g. ".mobi,.azw3".
+  std::string bookExtensions = ".mobi,.azw,.azw3,.prc";
+
+  /// \brief Creates the GUI on a board (e.g. DefaultBoard) for an open document,
+  /// which must outlive the GUI. The cover is decoded in begin().
+  MobiReaderApp(tinygpu::LCDBoard& board, Doc& doc)
+      : doc_(doc),
+        app_(board, darkTheme_),
+        prev_(tinymd::Bounds(), "Previous", tinymd::ButtonVariant::kTonal),
+        next_(tinymd::Bounds(), "Next", tinymd::ButtonVariant::kTonal) {}
+
+  /// \brief Builds the GUI. If the document is open, its first page is shown;
+  /// otherwise the open dialog is shown.
+  void begin() {
+    app_.begin();
+    tinymd::Screen<RGB_T>& screen = app_.screen();
+    text_.setRole(tinymd::TypographyRole::kBody);
+    text_.onLink = [this](const std::string& target) {
+      Position p;
+      if (!doc_.resolveLink(target.c_str(), p)) return;
+      if (history_.size() < kMaxHistory) history_.push_back(Jump{starts_[current_], coverShown_});
+      goTo(p);
+    };
+    text_.onSwipe = [this](bool toNext) {
+      if (toNext) {
+        next();
+      } else {
+        previous();
+      }
+    };
+    prev_.onClick = [this]() { previous(); };
+    next_.onClick = [this]() { next(); };
+    prev_.visible = buttonsVisible_;
+    next_.visible = buttonsVisible_;
+    buildTitleBar();
+    buildMenu();
+    buildSettings();
+    cover_.view.onNext = [this]() { next(); };
+    screen.addWidget(text_);
+    screen.addWidget(prev_);
+    screen.addWidget(next_);
+    screen.addWidget(cover_.view);
+    screen.addWidget(menuButton_);
+    screen.addFixedWidget(fileDialog_.panel());
+    fileDialog_.panel().visible = false;
+    layout();
+    if (doc_.isOpen()) {
+      loadBook();
+    } else {
+      openFileDialog();
+    }
+  }
+
+  /// \brief Shows the open dialog: the books of libraryDir. Tapping a book opens it.
+  /// Cancel is shown when a book is open.
+  void openFileDialog() {
+    const int32_t w = app_.width();
+    const int32_t h = app_.height();
+    fileDialog_.listDirectory = listFiles;
+    fileDialog_.onSelect = [this](const std::string& path) {
+      closeFileDialog();
+      if (openBook && openBook(path)) {
+        loadBook();
+      } else if (!doc_.isOpen()) {
+        // the dialog rebuilds its rows, so it is shown again on the next update()
+        reopenDialog_ = true;
+      }
+    };
+    fileDialog_.onCancel = doc_.isOpen() ? std::function<void()>([this]() { closeFileDialog(); })
+                                         : std::function<void()>();
+    fileDialog_.setTheme(dark_ ? darkTheme_ : lightTheme_);
+    fileDialog_.open(tinymd::Bounds(8, kTitleHeight + 4, w - 16, h - kTitleHeight - 12), "Open book", libraryDir,
+                     bookExtensions);
+    // a fixed widget, not a dialog: the title bar and its menu stay usable
+    fileDialog_.panel().visible = true;
+    app_.screen().invalidate();
+  }
+
+  /// \brief Hides the open dialog (e.g. when the menu is opened).
+  void closeFileDialog() {
+    fileDialog_.panel().visible = false;
+    app_.screen().invalidate();
+  }
+
+  /// \brief Shows the book of the document: its title, cover, bookmarks
+  /// and first page. Called after a book has been opened.
+  void loadBook() {
+    doc_.setTextMode(TextMode::PlainLinks);
+    const Metadata& md = doc_.metadata();
+    bookTitle_ = md.title[0] != 0 ? md.title : "Book";
+    aboutText_ = std::string("Author: ") + md.author + "\nPublisher: " + md.publisher + "\nLanguage: " + md.language;
+    coverShown_ = false;
+    cover_.load(doc_, app_.width(), app_.height());
+    bookmarks_.clear();
+    history_.clear();
+    layout();
+    goTo(Position(0, 0));
+    if (cover_.has()) showCover();
+  }
+
+  /// \brief Call from loop(): handles touch input and redraws when needed.
+  void update() {
+    if (reopenDialog_) {
+      reopenDialog_ = false;
+      openFileDialog();
+    }
+    if (fileDialog_.poll()) app_.screen().invalidate();
+    app_.update();
+  }
+
+  /// \brief Shows the next page, if there is one.
+  void next() {
+    if (coverShown_) {
+      coverShown_ = false;
+      showPage(0);
+    } else if (hasNext()) {
+      showPage(current_ + 1);
+    }
+  }
+
+  /// \brief Shows the previous page, if there is one.
+  void previous() {
+    if (coverShown_) return;
+    if (current_ == 0 && !history_.empty()) {
+      // back from a followed link: the page it was followed from
+      const Jump j = history_.back();
+      history_.pop_back();
+      goTo(j.start);
+      if (j.cover) showCover();
+    } else if (current_ == 0 && cover_.has()) {
+      showCover();
+    } else if (hasPrevious()) {
+      showPage(current_ - 1);
+    }
+  }
+
+  /// \brief Starts a new page sequence at position p (e.g. a table of contents entry).
+  void goTo(Position p) {
+    starts_.assign(1, p);
+    coverShown_ = false;
+    showPage(0);
+  }
+
+  /// \brief True if there is a page after the shown one.
+  bool hasNext() const { return coverShown_ ? !starts_.empty() : current_ + 1 < starts_.size(); }
+  /// \brief True if there is a page before the shown one.
+  bool hasPrevious() const {
+    return !coverShown_ && (current_ > 0 || cover_.has() || !history_.empty());
+  }
+
+  /// \brief True if the open book has a JPEG cover that could be decoded.
+  bool hasCover() const { return cover_.has(); }
+
+  /// \brief The text of the shown page (the text as drawn, without link markers).
+  std::string pageText() const { return text_.text(); }
+
+  /// \brief The number of the shown page, starting with 1.
+  uint32_t pageNumber() const { return current_ + 1; }
+
+  /// \brief Shows the cover page (if the book has a JPEG cover).
+  void showCover() {
+    coverShown_ = true;
+    updateVisibility();
+  }
+
+  /// \brief True if the screen uses the dark theme (the default).
+  bool isDark() const { return dark_; }
+
+  /// \brief Switches between the dark and the light theme.
+  void setDark(bool dark) {
+    dark_ = dark;
+    const MaterialTheme<RGB_T>& theme = dark ? darkTheme_ : lightTheme_;
+    app_.screen().setTheme(theme);
+    settings_.setTheme(theme);
+    app_.screen().invalidate();
+  }
+
+  /// \brief True if the Previous and Next buttons are shown (the default is off:
+  /// swipe the text instead).
+  bool buttonsVisible() const { return buttonsVisible_; }
+
+  /// \brief Shows or hides the page number in the title bar.
+  void setPageNumberVisible(bool visible) {
+    pageNumberVisible_ = visible;
+    updateTitle();  // the title may use the space of the page number
+    updateVisibility();
+  }
+
+  /// \brief True if the page number is shown in the title bar (the default).
+  bool isPageNumberVisible() const { return pageNumberVisible_; }
+
+  /// \brief Shows or hides the Previous and Next buttons.
+  void setButtonsVisible(bool visible) {
+    buttonsVisible_ = visible;
+    updateVisibility();
+    layout();
+    app_.screen().invalidate();
+  }
+
+  /// \brief Opens the settings screen (also available in the system menu).
+  void showSettings() {
+    darkSwitch_.setValue(dark_);
+    buttonsSwitch_.setValue(buttonsVisible_);
+    app_.screen().presentDialog(settings_);
+  }
+
+  /// \brief Saves screenshots of the cover (if any), the next text pages and the
+  /// settings screen. The sketch opens the file: store(name, write) must create
+  /// the image file "name", call write(out) with its Print, close the file and
+  /// return the result of write().
+  void saveScreenshots(const std::function<bool(const char* name, const std::function<bool(Print&)>& write)>& store,
+                       uint32_t pages = 3) {
+    auto shot = [this, &store](const char* name) {
+      app_.screen().invalidate();
+      app_.update();
+      return store(name, [this](Print& out) { return app_.saveScreenshot(out); });
+    };
+    goTo(Position(0, 0));
+    if (cover_.has()) {
+      showCover();
+      shot("cover");
+    }
+    for (uint32_t i = 0; i < pages && hasNext(); ++i) {
+      next();
+      shot(("page" + std::to_string(i + 1)).c_str());
+    }
+    showSettings();
+    shot("settings");
+    app_.screen().dismissDialog();
+  }
+
+  /// \brief The TinyMaterialDesign app, e.g. for app().saveScreenshot(file).
+  tinymd::App<RGB_T>& app() { return app_; }
+
+ private:
+  static constexpr int32_t kMargin = 12;
+  static constexpr int32_t kTitleHeight = 56;
+  static constexpr int32_t kNavHeight = 56;
+  static constexpr int32_t kButtonWidth = 100;
+  static constexpr int32_t kBadgeGap = 4;      // space between the page number and the menu icon
+  static constexpr int32_t kRowHeight = 44;
+  static constexpr size_t kMaxBookmarks = 32;
+
+  /// \brief A page that a link was followed from: its start, and whether the
+  /// cover was shown.
+  struct Jump {
+    Position start;
+    bool cover = false;
+  };
+  static constexpr size_t kMaxHistory = 32;
+
+  /// \brief A bookmark: the start of a page and its label.
+  struct Bookmark {
+    Position start;
+    std::string label;
+  };
+
+  /// \brief A link in the shown page text: the characters [begin, end) and the
+  /// target that Doc::resolveLink() accepts.
+  struct PageLink {
+    size_t begin = 0;
+    size_t end = 0;
+    std::string target;
+  };
+
+  /// \brief A character range [begin, end) of the shown page text.
+  struct Span {
+    size_t begin = 0;
+    size_t end = 0;
+  };
+
+  /// \brief The text of a page. Swipes turn pages; a tap on a link calls onLink
+  /// with its target. Headings are drawn with the title font, on their own lines.
+  /// The layout is computed in one place, so drawing, the tap mapping and the
+  /// page height agree.
+  class PageTextBlock : public tinymd::TextBlock<RGB_T> {
+   public:
+    /// \brief Called with true for a swipe to the left (next page) and false for a
+    /// swipe to the right (previous page).
+    std::function<void(bool)> onSwipe;
+    /// \brief Called with the target of a tapped link.
+    std::function<void(const std::string&)> onLink;
+
+    /// \brief Shows text (already without markers) with its links and headings.
+    void setPage(const std::string& text, std::vector<PageLink> links, std::vector<Span> headings) {
+      // a page that is mostly links (a table of contents) gets more space between the
+      // lines, so a tap is less likely to hit the neighbouring entry
+      size_t linkChars = 0;
+      for (const PageLink& l : links) linkChars += l.end - l.begin;
+      spacing_ = (!text.empty() && linkChars * 2 > text.size()) ? kLinkSpacing : kSpacing;
+      links_ = std::move(links);
+      headings_ = std::move(headings);
+      this->setText(text.c_str());
+    }
+
+    /// \brief The height the page text needs at the given width.
+    int32_t textHeight(int32_t width) const {
+      std::vector<Line> lines;
+      layoutLines(width, lines);
+      return lines.empty() ? 0 : lines.back().y + lines.back().height - this->bounds.y;
+    }
+
+    void draw(tinygpu::ISurface<RGB_T>& target) override {
+      const tinymd::MaterialTheme<RGB_T>& t = this->theme();
+      const RGB_T background = t.colors.background;
+      std::vector<Line> lines;
+      layoutLines(this->bounds.w, lines);
+      for (const Line& l : lines) {
+        if (l.text.empty()) continue;
+        const RGB_T color = l.heading ? t.colors.onSurface : t.colors.onSurfaceVariant;
+        l.font->drawText(target, static_cast<int16_t>(this->bounds.x), static_cast<int16_t>(l.y), l.text.c_str(),
+                         color, background, false);
+      }
+    }
+
+    bool onGesture(const tinygpu::GestureEvent& event) override {
+      if (event.phase != tinygpu::GesturePhase::kEnded) return false;
+      if (event.type == tinygpu::GestureType::kTap) {
+        std::string target;
+        if (onLink && linkAt(event.point.x, event.point.y, target)) {
+          onLink(target);
+          return true;
+        }
+        return false;
+      }
+      if (event.type == tinygpu::GestureType::kSwipeLeft) {
+        if (onSwipe) onSwipe(true);
+        return true;
+      }
+      if (event.type == tinygpu::GestureType::kSwipeRight) {
+        if (onSwipe) onSwipe(false);
+        return true;
+      }
+      return false;
+    }
+
+   private:
+    /// Line spacing (the same as tinymd::TextBlock's default).
+    static constexpr int32_t kSpacing = 3;
+    /// Line spacing on pages that are mostly links.
+    static constexpr int32_t kLinkSpacing = 12;
+    int32_t spacing_ = kSpacing;  // the spacing of the page shown
+
+    struct Word {
+      size_t begin;    // index in the text
+      size_t end;
+      size_t linePos;  // index in the line it is drawn in
+    };
+
+    struct Line {
+      std::string text;          // the words joined by single spaces
+      std::vector<Word> words;
+      tinygpu::IFont<RGB_T>* font = nullptr;
+      bool heading = false;
+      int32_t y = 0;             // top of the line
+      int32_t height = 0;        // font height plus spacing
+    };
+
+    bool isHeading(size_t index) const {
+      for (const Span& h : headings_) {
+        if (index >= h.begin && index < h.end) return true;
+      }
+      return false;
+    }
+
+    /// \brief Splits the text into paragraphs (at newlines) and wraps each one.
+    void layoutLines(int32_t width, std::vector<Line>& out) const {
+      out.clear();
+      const std::string& text = this->text();
+      const auto& theme = this->theme();
+      tinygpu::IFont<RGB_T>* body = tinymd::fontForTypographyRole(tinymd::TypographyRole::kBody, theme);
+      tinygpu::IFont<RGB_T>* title = tinymd::fontForTypographyRole(tinymd::TypographyRole::kTitle, theme);
+      size_t ps = 0;
+      for (;;) {
+        size_t pe = text.find('\n', ps);
+        if (pe == std::string::npos) pe = text.size();
+        if (ps == pe && pe == text.size() && !text.empty()) break;  // no blank line after the last newline
+        const bool heading = isHeading(ps);
+        wrapParagraph(text, ps, pe, width, heading ? title : body, heading, out);
+        if (pe >= text.size()) break;
+        ps = pe + 1;
+      }
+      int32_t y = this->bounds.y;
+      for (Line& l : out) {
+        l.y = y;
+        l.height = static_cast<int32_t>(l.font->getHeight(1)) + spacing_;
+        y += l.height;
+      }
+    }
+
+    void wrapParagraph(const std::string& text, size_t ps, size_t pe, int32_t width, tinygpu::IFont<RGB_T>* font,
+                       bool heading, std::vector<Line>& out) const {
+      const size_t before = out.size();
+      Line line;
+      line.font = font;
+      line.heading = heading;
+      auto fits = [&](const std::string& s) { return static_cast<int32_t>(font->measureTextWidth(s.c_str())) <= width; };
+      auto endLine = [&]() {
+        out.push_back(line);
+        line = Line();
+        line.font = font;
+        line.heading = heading;
+      };
+      size_t wb = std::string::npos;
+      for (size_t i = ps; i <= pe; ++i) {
+        const char c = i < pe ? text[i] : ' ';
+        if (c != ' ') {
+          if (wb == std::string::npos) wb = i;
+          continue;
+        }
+        if (wb == std::string::npos) continue;
+        const std::string word = text.substr(wb, i - wb);
+        const std::string candidate = line.text.empty() ? word : line.text + " " + word;
+        if (!line.text.empty() && !fits(candidate)) {
+          endLine();
+          line.text = word;
+          line.words.push_back(Word{wb, i, 0});
+        } else {
+          line.words.push_back(Word{wb, i, line.text.empty() ? 0 : line.text.size() + 1});
+          line.text = candidate;
+        }
+        wb = std::string::npos;
+      }
+      if (!line.text.empty()) endLine();
+      if (out.size() == before) endLine();  // an empty paragraph is a blank line
+    }
+
+    /// \brief Finds the link under the point (x, y), if any.
+    bool linkAt(int32_t x, int32_t y, std::string& target) const {
+      if (links_.empty()) return false;
+      std::vector<Line> lines;
+      layoutLines(this->bounds.w, lines);
+      const std::string& text = this->text();
+      for (const Line& l : lines) {
+        // the space between two lines is shared: each line takes half of it on either side
+        const int32_t top = l.y - spacing_ / 2;
+        const int32_t bottom = l.y + l.height - spacing_ / 2;
+        if (y < top || y >= bottom) continue;
+        for (const Word& w : l.words) {
+          const std::string word = text.substr(w.begin, w.end - w.begin);
+          const int32_t x0 = this->bounds.x + static_cast<int32_t>(l.font->measureTextWidth(l.text.substr(0, w.linePos).c_str()));
+          const int32_t x1 = x0 + static_cast<int32_t>(l.font->measureTextWidth(word.c_str()));
+          if (x < x0 || x >= x1) continue;
+          for (const PageLink& k : links_) {
+            if (w.begin >= k.begin && w.begin < k.end) {
+              target = k.target;
+              return true;
+            }
+          }
+          return false;
+        }
+        return false;
+      }
+      return false;
+    }
+
+    std::vector<PageLink> links_;
+    std::vector<Span> headings_;
+  };
+
+  /// \brief The place of the page number: left of the menu icon, in the title bar.
+  /// The page number is right-aligned: its box ends just left of the menu icon, and
+  /// is as wide as the number (see updateTitle()).
+  tinymd::Bounds pageLabelBounds(int32_t textWidth) const {
+    const tinymd::Bounds menu = appBar_.trailingRect();
+    return tinymd::Bounds(menu.x - kBadgeGap - textWidth, appBar_.bounds.y, textWidth, kTitleHeight);
+  }
+
+  /// \brief True if the page number is shown (the setting, and a book is open).
+  bool pageNumberShown() const { return pageNumberVisible_ && doc_.isOpen(); }
+
+  /// \brief The title bar with the book title, the page number and the menu icon.
+  void buildTitleBar() {
+    appBar_ = tinymd::AppBar<RGB_T>(tinymd::Bounds(0, 0, app_.width(), kTitleHeight), "");
+    menuButton_ = tinymd::IconButton<RGB_T>(appBar_.trailingRect(), tinymd::drawMenu<RGB_T>);
+    menuButton_.onClick = [this]() {
+      closeFileDialog();
+      openMenu();
+    };
+    appBar_.trailing = &menuButton_;
+    app_.screen().addFixedWidget(appBar_);
+    // the page number, left of the menu icon (the title is cut before it)
+    pageLabel_ = tinymd::Label<RGB_T>(pageLabelBounds(0), "", tinymd::TypographyRole::kTitle);
+    app_.screen().addFixedWidget(pageLabel_);
+    updateTitle();
+  }
+
+  /// \brief The system menu.
+  void buildMenu() {
+    constexpr int32_t menuW = 170;
+    constexpr int32_t itemH = 32;
+    const int32_t w = app_.width();
+    menu_ = tinymd::Menu<RGB_T>(tinymd::Bounds(w - menuW - 4, kTitleHeight, menuW, 7 * itemH));
+
+    openItem_ = tinymd::ListItem<RGB_T>(menu_.itemRect(0, itemH), "Open book");
+    openItem_.onClick = [this]() {
+      app_.screen().dismissDialog();
+      openFileDialog();
+    };
+    menu_.addItem(openItem_);
+
+    startItem_ = tinymd::ListItem<RGB_T>(menu_.itemRect(1, itemH), "Go to start");
+    startItem_.onClick = [this]() {
+      app_.screen().dismissDialog();
+      goTo(Position(0, 0));
+      if (cover_.has()) showCover();
+    };
+    menu_.addItem(startItem_);
+
+    bookmarksItem_ = tinymd::ListItem<RGB_T>(menu_.itemRect(2, itemH), "Bookmarks");
+    bookmarksItem_.onClick = [this]() {
+      app_.screen().dismissDialog();
+      openBookmarks();
+    };
+    menu_.addItem(bookmarksItem_);
+
+    settingsItem_ = tinymd::ListItem<RGB_T>(menu_.itemRect(3, itemH), "Settings");
+    settingsItem_.onClick = [this]() {
+      app_.screen().dismissDialog();
+      showSettings();
+    };
+    menu_.addItem(settingsItem_);
+
+    aboutItem_ = tinymd::ListItem<RGB_T>(menu_.itemRect(4, itemH), "About");
+    aboutItem_.onClick = [this]() {
+      app_.screen().dismissDialog();
+      openAbout();
+    };
+    menu_.addItem(aboutItem_);
+
+    closeItem_ = tinymd::ListItem<RGB_T>(menu_.itemRect(5, itemH), "Close");
+    closeItem_.onClick = [this]() {
+      app_.screen().dismissDialog();
+      if (onClose) onClose();
+    };
+    menu_.addItem(closeItem_);
+    menu_.onOutsideTap = [this]() { app_.screen().dismissDialog(); };
+  }
+
+  /// \brief The About dialog with the author, publisher and language of the book.
+  void openAbout() {
+    const int32_t w = app_.width();
+    const int32_t h = app_.height();
+    const int32_t dialogH = 200;
+    // the page that is shown now (the dialog copies the text)
+    const std::string page = coverShown_ ? std::string("Cover") : std::to_string(pageNumber());
+    const std::string text = aboutText_ + "\nPage: " + page;
+    about_ = tinymd::Dialog<RGB_T>(tinymd::Bounds(16, (h - dialogH) / 2, w - 32, dialogH), bookTitle_.c_str(),
+                                   text.c_str());
+    aboutOk_ = tinymd::Button<RGB_T>(about_.actionRect(0, 1), "OK");
+    aboutOk_.onClick = [this]() { app_.screen().dismissDialog(); };
+    about_.addAction(aboutOk_);
+    app_.screen().presentDialog(about_);
+  }
+
+  /// \brief The settings screen: a panel with the dark mode and the navigation
+  /// button switches, and a Done button.
+  void buildSettings() {
+    const int32_t w = app_.width();
+    const int32_t h = app_.height();
+    const int32_t panelH = 300;
+    const tinymd::Bounds panel(12, (h - panelH) / 2, w - 24, panelH);
+    settings_ = tinymd::Container<RGB_T>(panel);
+    settingsBackground_ = tinymd::Card<RGB_T>(panel);
+    settings_.addChild(settingsBackground_);
+
+    const int32_t rowX = panel.x + 16;
+    const int32_t labelW = panel.w - 32 - 60;
+    settingsTitle_ = tinymd::Label<RGB_T>(tinymd::Bounds(rowX, panel.y + 12, panel.w - 32, 32), "Settings",
+                                          tinymd::TypographyRole::kTitle);
+    darkLabel_ = tinymd::Label<RGB_T>(tinymd::Bounds(rowX, panel.y + 60, labelW, 32), "Dark mode");
+    darkSwitch_ = tinymd::Switch<RGB_T>(tinymd::Bounds(rowX + labelW + 8, panel.y + 60, 52, 32), dark_);
+    darkSwitch_.onChange = [this](bool on) { setDark(on); };
+    buttonsLabel_ =
+        tinymd::Label<RGB_T>(tinymd::Bounds(rowX, panel.y + 112, labelW, 32), "Navigation buttons");
+    buttonsSwitch_ =
+        tinymd::Switch<RGB_T>(tinymd::Bounds(rowX + labelW + 8, panel.y + 112, 52, 32), buttonsVisible_);
+    buttonsSwitch_.onChange = [this](bool on) { setButtonsVisible(on); };
+    pageNumberRowLabel_ =
+        tinymd::Label<RGB_T>(tinymd::Bounds(rowX, panel.y + 164, labelW, 32), "Page number");
+    pageNumberSwitch_ =
+        tinymd::Switch<RGB_T>(tinymd::Bounds(rowX + labelW + 8, panel.y + 164, 52, 32), pageNumberVisible_);
+    pageNumberSwitch_.onChange = [this](bool on) { setPageNumberVisible(on); };
+    settingsHint_ = tinymd::Label<RGB_T>(tinymd::Bounds(rowX, panel.y + 208, panel.w - 32, 40),
+                                         "Swipe the text to turn pages.",
+                                         tinymd::TypographyRole::kLabel);
+    settingsDone_ = tinymd::Button<RGB_T>(tinymd::Bounds(panel.right() - 116, panel.bottom() - 52, 100, 40),
+                                          "Done", tinymd::ButtonVariant::kText);
+    settingsDone_.onClick = [this]() { app_.screen().dismissDialog(); };
+
+    settings_.addChild(settingsTitle_);
+    settings_.addChild(darkLabel_);
+    settings_.addChild(darkSwitch_);
+    settings_.addChild(buttonsLabel_);
+    settings_.addChild(buttonsSwitch_);
+    settings_.addChild(pageNumberRowLabel_);
+    settings_.addChild(pageNumberSwitch_);
+    settings_.addChild(settingsHint_);
+    settings_.addChild(settingsDone_);
+  }
+
+  /// \brief The bookmarks panel: a row to bookmark the shown page, and one row per
+  /// bookmark. The bookmarks are kept for this session.
+  void openBookmarks() {
+    const int32_t w = app_.width();
+    const int32_t h = app_.height();
+    const tinymd::Bounds panel(8, kTitleHeight + 4, w - 16, h - kTitleHeight - 12);
+    const tinymd::Bounds row0(panel.x + 8, panel.y + 8, panel.w - 16, kRowHeight);
+    bookmarkRows_.clear();
+    bookmarksPanel_ = tinymd::Container<RGB_T>(panel);
+    bookmarksBackground_ = tinymd::Card<RGB_T>(panel);
+    bookmarksPanel_.setTheme(dark_ ? darkTheme_ : lightTheme_);
+    bookmarksPanel_.addChild(bookmarksBackground_);
+
+    auto addRow = [this](const tinymd::Bounds& rect, const std::string& label, std::function<void()> onClick) {
+      std::unique_ptr<tinymd::ListItem<RGB_T>> row(new tinymd::ListItem<RGB_T>(rect, label.c_str()));
+      row->onClick = std::move(onClick);
+      bookmarksPanel_.addChild(*row);
+      bookmarkRows_.push_back(std::move(row));
+    };
+
+    addRow(row0, "Close", [this]() { app_.screen().dismissDialog(); });
+    int32_t y = row0.y + kRowHeight + 4;
+    addRow(tinymd::Bounds(row0.x, y, row0.w, kRowHeight), "Add bookmark - page " + std::to_string(pageNumber()),
+           [this]() {
+             app_.screen().dismissDialog();
+             if (bookmarks_.size() >= kMaxBookmarks) return;
+             Bookmark b;
+             b.start = coverShown_ ? starts_[0] : starts_[current_];
+             b.label = "Page " + std::to_string(current_ + 1);
+             bookmarks_.push_back(b);
+           });
+    y += kRowHeight + 4;
+    for (size_t i = 0; i < bookmarks_.size(); ++i) {
+      addRow(tinymd::Bounds(row0.x, y, row0.w, kRowHeight), bookmarks_[i].label, [this, i]() {
+        app_.screen().dismissDialog();
+        goTo(bookmarks_[i].start);
+      });
+      y += kRowHeight;
+    }
+    app_.screen().presentDialog(bookmarksPanel_);
+  }
+
+  /// \brief Opens the system menu; "Close" is only listed if onClose is set.
+  void openMenu() {
+    closeItem_.visible = static_cast<bool>(onClose);
+    // all six slots are kept, so a hidden "Close" does not leave a scroll bar
+    menu_.bounds.h = 6 * startItem_.bounds.h;
+    app_.screen().presentDialog(menu_);
+  }
+
+  /// \brief Shows the (shortened) book title and the page number in the title bar.
+  void updateTitle() {
+    if (!doc_.isOpen()) {  // no book: the application name, and no page number
+      appBar_.setTitle("TinyMOBI");
+      pageLabel_.setText("");
+      return;
+    }
+    tinygpu::IFont<RGB_T>& font = *(dark_ ? darkTheme_ : lightTheme_).typography.title;
+    auto width = [&](const std::string& t) { return static_cast<int32_t>(font.measureTextWidth(t.c_str())); };
+    // the page number, right-aligned next to the menu icon
+    const std::string number = std::to_string(current_ + 1);
+    pageLabel_.setText(number.c_str());
+    pageLabel_.bounds = pageLabelBounds(width(number));
+    // the title is cut to the width between its start and the page number (or the menu)
+    const int32_t start = appBar_.bounds.x + 16;
+    const int32_t end = (pageNumberShown() ? pageLabel_.bounds.x : menuButton_.bounds.x) - kBadgeGap;
+    const int32_t avail = end - start;
+    std::string shortTitle = bookTitle_;
+    if (width(shortTitle) > avail) {
+      while (!shortTitle.empty() && width(shortTitle + "...") > avail) shortTitle.pop_back();
+      shortTitle += "...";
+    }
+    appBar_.setTitle(shortTitle.c_str());
+  }
+
+  /// \brief The title bar at the top, the text area and, if enabled, the navigation
+  /// buttons at the bottom.
+  void layout() {
+    const int32_t w = app_.width();
+    const int32_t h = app_.height();
+    appBar_.bounds = tinymd::Bounds(0, 0, w, kTitleHeight);
+    menuButton_.bounds = appBar_.trailingRect();
+    text_.bounds = textBounds();
+    pageLabel_.bounds = pageLabelBounds(pageLabel_.bounds.w);
+    const int32_t buttonY = h - kNavHeight + 8;
+    prev_.bounds = tinymd::Bounds(kMargin, buttonY, kButtonWidth, 40);
+    next_.bounds = tinymd::Bounds(w - kMargin - kButtonWidth, buttonY, kButtonWidth, 40);
+  }
+
+  /// \brief The area for the text of the shown page: below the title bar, and
+  /// below the cover on the first page. The bottom is above the navigation
+  /// buttons when they are shown.
+  tinymd::Bounds textBounds() const {
+    const int32_t w = app_.width();
+    const int32_t h = app_.height();
+    const int32_t top = kTitleHeight + kMargin;
+    const int32_t bottom = h - navHeight() - kMargin;
+    return tinymd::Bounds(kMargin, top, w - 2 * kMargin, bottom - top);
+  }
+
+  /// \brief The height of the navigation buttons at the bottom (0 if they are hidden).
+  int32_t navHeight() const { return buttonsVisible_ ? kNavHeight : 0; }
+
+
+  /// \brief Shows the cover page or the text page, with the bars that belong to it.
+  void updateVisibility() {
+    const bool cover = coverShown_ && cover_.has();
+    cover_.view.visible = cover;
+    text_.visible = !cover;
+    appBar_.visible = !cover;
+    menuButton_.visible = !cover;
+    pageLabel_.visible = !cover && pageNumberShown();
+    prev_.visible = buttonsVisible_ && !cover;
+    next_.visible = buttonsVisible_ && !cover;
+    app_.screen().invalidate();
+  }
+
+  /// \brief Shows a page whose start is starts_[index] (known).
+  void showPage(uint32_t index) {
+    current_ = index;
+    text_.bounds = textBounds();
+    std::string text;
+    bool eof = readCandidate(starts_[index], text);
+    bool cut = false;
+    if (!eof) cut = cutAtWord(text) || cut;
+    cut = fitText(text) || cut;
+    // the page ends where its text ends
+    Position end = endOf(starts_[index], text.size());
+    if (index + 1 == starts_.size() && (!eof || cut) && starts_.size() < kMaxPages) {
+      starts_.push_back(end);
+    }
+    std::string shown;
+    std::vector<PageLink> links;
+    std::vector<Span> headings;
+    stripLinks(text, shown, links, headings);
+    text_.setPage(shown, std::move(links), std::move(headings));
+    updateTitle();
+    prev_.enabled = hasPrevious();
+    next_.enabled = hasNext();
+    updateVisibility();
+  }
+
+  /// \brief Reads up to kPageBytes of text from start. Returns true if the end of
+  /// the book was reached.
+  bool readCandidate(Position start, std::string& text) {
+    text.clear();
+    if (doc_.seek(start) != Error::None) return true;
+    uint8_t b = 0;
+    while (text.size() < kPageBytes) {
+      if (doc_.read(&b, 1) == 0) return true;
+      text.push_back(static_cast<char>(b));
+    }
+    return doc_.read(&b, 1) == 0;  // true if nothing follows
+  }
+
+  /// \brief Position after the first n bytes of the text that starts at start.
+  Position endOf(Position start, size_t n) {
+    if (doc_.seek(start) != Error::None) return start;
+    uint8_t b = 0;
+    for (size_t i = 0; i < n; ++i) {
+      if (doc_.read(&b, 1) == 0) break;
+    }
+    return doc_.position();
+  }
+
+  /// \brief Cuts the text after its last word. Returns true if something was cut.
+  static bool cutAtWord(std::string& text) {
+    size_t sp = text.find_last_of(" \n\t\r");
+    if (sp == std::string::npos || sp == 0) return false;
+    text.resize(sp);
+    return true;
+  }
+
+  /// \brief Removes the link markers from text (see TextMode::PlainLinks) and
+  /// returns the links with their character positions in the result.
+  static void stripLinks(const std::string& text, std::string& out, std::vector<PageLink>& links,
+                         std::vector<Span>& headings) {
+    out.clear();
+    links.clear();
+    headings.clear();
+    PageLink cur;
+    size_t headBegin = 0;
+    bool inHead = false, inTarget = false, inLink = false;
+    for (char ch : text) {
+      const uint8_t b = static_cast<uint8_t>(ch);
+      if (b == kHeadBegin) {
+        headBegin = out.size();
+        inHead = true;
+      } else if (b == kHeadEnd) {
+        if (inHead && out.size() > headBegin) headings.push_back(Span{headBegin, out.size()});
+        inHead = false;
+      } else if (b == kLinkBegin) {
+        cur = PageLink();
+        cur.begin = out.size();
+        cur.target.clear();
+        inTarget = inLink = true;
+      } else if (inTarget) {
+        if (b == kLinkTarget) inTarget = false;
+        else cur.target.push_back(ch);
+      } else if (b == kLinkEnd) {
+        if (inLink && cur.end > cur.begin) links.push_back(cur);
+        inLink = false;
+      } else {
+        out.push_back(ch);
+        if (inLink) cur.end = out.size();
+      }
+    }
+    // a link or heading cut by the end of the page: keep its visible part
+    if (inLink && !inTarget && cur.end > cur.begin) links.push_back(cur);
+    if (inHead && out.size() > headBegin) headings.push_back(Span{headBegin, out.size()});
+  }
+
+  /// \brief Cuts whole words until the text fits the text area. Returns true if
+  /// something was cut. The text is measured without its link markers.
+  bool fitText(std::string& text) {
+    bool cut = false;
+    std::string shown;
+    std::vector<PageLink> links;
+    std::vector<Span> headings;
+    // the text block gets the headings too: its height depends on them
+    stripLinks(text, shown, links, headings);
+    text_.setPage(shown, links, headings);
+    while (!text.empty() && text_.textHeight(text_.bounds.w) > text_.bounds.h) {
+      if (text.size() < 2) break;
+      size_t sp = text.find_last_of(" \n\t\r", text.size() - 2);
+      if (sp == std::string::npos || sp == 0) break;
+      text.resize(sp);
+      cut = true;
+      stripLinks(text, shown, links, headings);
+      text_.setPage(shown, links, headings);
+    }
+    return cut;
+  }
+
+  Doc& doc_;
+  // the themes must outlive the app: the screen keeps a pointer to them
+  tinymd::MaterialTheme<RGB_T> darkTheme_ = tinymd::defaultDarkTheme<RGB_T>();
+  tinymd::MaterialTheme<RGB_T> lightTheme_ = tinymd::defaultTheme<RGB_T>();
+  tinymd::App<RGB_T> app_;
+  PageTextBlock text_;
+  tinymd::Button<RGB_T> prev_;
+  tinymd::Button<RGB_T> next_;
+  tinymd::AppBar<RGB_T> appBar_;
+  tinymd::Label<RGB_T> pageLabel_;
+  tinymd::IconButton<RGB_T> menuButton_;
+  tinymd::Menu<RGB_T> menu_;
+  tinymd::ListItem<RGB_T> startItem_;
+  tinymd::ListItem<RGB_T> openItem_;
+  tinymd::FileDialog<RGB_T> fileDialog_;
+  tinymd::ListItem<RGB_T> bookmarksItem_;
+  tinymd::Container<RGB_T> bookmarksPanel_;
+  tinymd::Card<RGB_T> bookmarksBackground_;
+  std::vector<std::unique_ptr<tinymd::ListItem<RGB_T>>> bookmarkRows_;
+  std::vector<Bookmark> bookmarks_;
+  std::vector<Jump> history_;  // the pages that links were followed from
+  tinymd::ListItem<RGB_T> settingsItem_;
+  tinymd::ListItem<RGB_T> aboutItem_;
+  tinymd::ListItem<RGB_T> closeItem_;
+  tinymd::Dialog<RGB_T> about_;
+  tinymd::Button<RGB_T> aboutOk_;
+  tinymd::Container<RGB_T> settings_;
+  tinymd::Card<RGB_T> settingsBackground_;
+  tinymd::Label<RGB_T> settingsTitle_;
+  tinymd::Label<RGB_T> darkLabel_;
+  tinymd::Switch<RGB_T> darkSwitch_;
+  tinymd::Label<RGB_T> buttonsLabel_;
+  tinymd::Switch<RGB_T> buttonsSwitch_;
+  tinymd::Label<RGB_T> pageNumberRowLabel_;
+  tinymd::Switch<RGB_T> pageNumberSwitch_;
+  tinymd::Label<RGB_T> settingsHint_;
+  tinymd::Button<RGB_T> settingsDone_;
+  MobiCover<RGB_T, Doc> cover_;
+  bool coverShown_ = false;
+  bool reopenDialog_ = false;
+  bool dark_ = true;
+  bool buttonsVisible_ = false;
+  bool pageNumberVisible_ = true;
+  std::string bookTitle_;
+  std::string aboutText_;
+  std::vector<Position> starts_;  // page starts known so far: starts_[0] is the first page
+  uint32_t current_ = 0;  // index of the shown page
+};
+
+}  // namespace tinymobi
