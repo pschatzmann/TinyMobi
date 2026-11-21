@@ -1,0 +1,7 @@
+<map id="tinymobi::MobiCover&lt; RGB_T, Doc &gt;" name="tinymobi::MobiCover&lt; RGB_T, Doc &gt;">
+<area shape="rect" id="Node000001" title="The cover of a book. load() decodes the JPEG cover of the open document into a sprite scaled to the l..." alt="" coords="24,192,181,237"/>
+<area shape="rect" id="Node000002" href="$classtinymobi_1_1MobiCover_1_1Page.html" title="The cover page: the image centred on the full screen. A tap or a swipe." alt="" coords="19,82,186,127"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="104,141,105,192,100,191,101,145"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="5,5,200,33"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="103,46,105,82,100,81,102,51"/>
+</map>

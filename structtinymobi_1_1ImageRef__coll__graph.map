@@ -1,0 +1,5 @@
+<map id="tinymobi::ImageRef" name="tinymobi::ImageRef">
+<area shape="rect" id="Node000001" title="An image reference found in the text (recindex or kindle:embed)." alt="" coords="5,98,156,126"/>
+<area shape="rect" id="Node000002" href="$classtinymobi_1_1Position.html" title="Position in the book text: a section (text record or KF8 part) and an offset in it." alt="" coords="11,5,150,33"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="83,47,83,98,78,97,78,50"/>
+</map>
