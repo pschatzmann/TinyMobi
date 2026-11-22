@@ -1,5 +1,9 @@
 # TinyMobi
 
+[![Arduino Library](https://img.shields.io/badge/Arduino-Library-blue.svg)](https://www.arduino.cc/reference/en/libraries/)
+[![CMake](https://img.shields.io/badge/CMake-Supported-blue.svg)](https://github.com/pschatzmann/TinyMobi/blob/main/CMakeLists.txt)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](docs/license.md)
+
 ## Introduction
 
 TinyMobi is a header-only MOBI / PalmDOC parser for Arduino and desktop C++.
@@ -53,7 +57,7 @@ Limitations (DRM, images are not decoded, and others) are listed in
 - [Running the example on the desktop](docs/emulator.md): the Arduino emulator
 - [Limitations](docs/limitations.md): what is not supported
 - [Layout](docs/layout.md): the files of the project
-- [API reference](https://pschatzmann.github.io/TinyMobi/namespaces.html)`
+- [API reference](https://pschatzmann.github.io/TinyMobi/namespaces.html) Doxygen Class Documentation
 - [License](docs/license.md)
 
 ## Installation in Arduino
