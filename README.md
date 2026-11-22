@@ -12,36 +12,48 @@ from memory or from an SD card, one record at a time, into a fixed buffer.
 
 ## Features
 
+### Small footprint
+
 - Header only: `#include <TinyMobi.h>`, no heap allocation.
-- The file is never loaded completely. Headers, metadata and the record table
-  are read on demand, and text is decompressed one record at a time into a
-  fixed buffer (`RecordBufferSize`, default 4096 bytes).
+- The file is never loaded completely. Headers, metadata and the record table are
+  read on demand.
+- Text is decompressed one record at a time into a fixed buffer
+  (`RecordBufferSize`, default 4096 bytes).
 - Works with memory buffers (`MemorySource`) and any seekable file
   (`StreamSource<File>`: SD, LittleFS, FFat, SPIFFS, SdFat).
-- Text compression: PalmDOC (LZ77), HUFF/CDIC and uncompressed, with trailing
-  entries and multibyte overlap.
+
+### Formats and text
+
+- Compression: PalmDOC (LZ77), HUFF/CDIC and uncompressed, with trailing entries
+  and multibyte overlap.
+- KF8 (AZW3 and hybrid MOBI): the XHTML parts are assembled from the skeleton and
+  fragment tables and read like any other text. The output is byte identical to
+  KindleUnpack on the test books.
+- One text stream for every format: `read()` delivers the book in reading order.
 - UTF-8 output; CP1252 books are converted on the fly.
 - Markup mode (raw HTML-like book text) or plain text mode (tags removed, block
   tags become newlines, entities decoded).
-- One text stream for every format: `read()` delivers the book in reading order
-  (KF8 parts are assembled automatically). `position()` / `seek()` give
-  section-based bookmarks.
+- Bookmarks: `position()` and `seek()` work with section-based positions.
+
+### Book structure
+
 - Metadata: title, author, publisher, language, date, cover record.
-- Table of contents (NCX index): titles, start positions, levels and the tree
-  (not the start positions of KF8 books, see the limitations). The links of the
-  text (`filepos` and `kindle:pos`) resolve to positions with `resolveLink()`, also
-  in KF8 books.
+- Table of contents (NCX index): titles, start positions, levels and the tree.
+  The start positions are not available for KF8 books (see the limitations).
+- Links in the text (`filepos` and `kindle:pos`) resolve to positions with
+  `resolveLink()`, also in KF8 books.
+- Image references in the text (`<img recindex>` and `kindle:embed`).
 - Raw access to any PalmDB record with `readRecord()` and `recordLength()`.
   `imageType()` recognizes JPEG, PNG, GIF and BMP data, so covers can be saved.
-- Image references in the text (`<img recindex>` and `kindle:embed`).
-- Optional reader GUI for TinyMaterialDesign and TinyFonts (`src/TinyMobi/MobiReaderApp.h`):
-  page-by-page reading with swipe navigation, tappable links (the table of
-  contents is part of the text), headings, a title bar with the page number, a
-  system menu with a settings screen (dark mode, navigation buttons, page number),
-  and the JPEG cover on the first page.
-- KF8 (AZW3 and hybrid MOBI): the XHTML parts are assembled from the skeleton
-  and fragment tables and read like any other text. The output is byte identical
-  to KindleUnpack on the test books.
+
+### Reader GUI (optional)
+
+Built on TinyMaterialDesign and TinyFonts, see `src/TinyMobi/MobiReaderApp.h`.
+
+- Page-by-page reading with swipe navigation.
+- Tappable links: the table of contents is part of the text.
+- Headings, a title bar with the page number, and the JPEG cover on the first page.
+- A system menu with a settings screen: dark mode, navigation buttons, page number.
 
 Limitations (DRM, images are not decoded, and others) are listed in
 [Limitations](https://github.com/pschatzmann/TinyMobi/wiki/Limitations).
