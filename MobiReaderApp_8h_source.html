@@ -815,7 +815,7 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00825" name="l00825"></a><span class="lineno">  825</span>    std::string shown;</div>
 <div class="line"><a id="l00826" name="l00826"></a><span class="lineno">  826</span>    std::vector&lt;PageLink&gt; links;</div>
 <div class="line"><a id="l00827" name="l00827"></a><span class="lineno">  827</span>    std::vector&lt;Span&gt; headings;</div>
-<div class="line"><a id="l00828" name="l00828"></a><span class="lineno">  828</span>    stripLinks(text, shown, links, headings);</div>
+<div class="line"><a id="l00828" name="l00828"></a><span class="lineno">  828</span>    stripLinks(text, shown, links, headings, bookTitle_);</div>
 <div class="line"><a id="l00829" name="l00829"></a><span class="lineno">  829</span>    text_.setPage(shown, std::move(links), std::move(headings));</div>
 <div class="line"><a id="l00830" name="l00830"></a><span class="lineno">  830</span>    updateTitle();</div>
 <div class="line"><a id="l00831" name="l00831"></a><span class="lineno">  831</span>    prev_.enabled = hasPrevious();</div>
@@ -850,119 +850,148 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00864" name="l00864"></a><span class="lineno">  864</span>    <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
 <div class="line"><a id="l00865" name="l00865"></a><span class="lineno">  865</span>  }</div>
 <div class="line"><a id="l00866" name="l00866"></a><span class="lineno">  866</span> </div>
-<div class="line"><a id="l00869" name="l00869"></a><span class="lineno">  869</span>  <span class="keyword">static</span> <span class="keywordtype">void</span> stripLinks(<span class="keyword">const</span> std::string&amp; text, std::string&amp; out, std::vector&lt;PageLink&gt;&amp; links,</div>
-<div class="line"><a id="l00870" name="l00870"></a><span class="lineno">  870</span>                         std::vector&lt;Span&gt;&amp; headings) {</div>
-<div class="line"><a id="l00871" name="l00871"></a><span class="lineno">  871</span>    out.clear();</div>
-<div class="line"><a id="l00872" name="l00872"></a><span class="lineno">  872</span>    links.clear();</div>
-<div class="line"><a id="l00873" name="l00873"></a><span class="lineno">  873</span>    headings.clear();</div>
-<div class="line"><a id="l00874" name="l00874"></a><span class="lineno">  874</span>    PageLink cur;</div>
-<div class="line"><a id="l00875" name="l00875"></a><span class="lineno">  875</span>    <span class="keywordtype">size_t</span> headBegin = 0;</div>
-<div class="line"><a id="l00876" name="l00876"></a><span class="lineno">  876</span>    <span class="keywordtype">bool</span> inHead = <span class="keyword">false</span>, inTarget = <span class="keyword">false</span>, inLink = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00877" name="l00877"></a><span class="lineno">  877</span>    <span class="keywordflow">for</span> (<span class="keywordtype">char</span> ch : text) {</div>
-<div class="line"><a id="l00878" name="l00878"></a><span class="lineno">  878</span>      <span class="keyword">const</span> uint8_t b = <span class="keyword">static_cast&lt;</span>uint8_t<span class="keyword">&gt;</span>(ch);</div>
-<div class="line"><a id="l00879" name="l00879"></a><span class="lineno">  879</span>      <span class="keywordflow">if</span> (b == kHeadBegin) {</div>
-<div class="line"><a id="l00880" name="l00880"></a><span class="lineno">  880</span>        headBegin = out.size();</div>
-<div class="line"><a id="l00881" name="l00881"></a><span class="lineno">  881</span>        inHead = <span class="keyword">true</span>;</div>
-<div class="line"><a id="l00882" name="l00882"></a><span class="lineno">  882</span>      } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (b == kHeadEnd) {</div>
-<div class="line"><a id="l00883" name="l00883"></a><span class="lineno">  883</span>        <span class="keywordflow">if</span> (inHead &amp;&amp; out.size() &gt; headBegin) headings.push_back(Span{headBegin, out.size()});</div>
-<div class="line"><a id="l00884" name="l00884"></a><span class="lineno">  884</span>        inHead = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00885" name="l00885"></a><span class="lineno">  885</span>      } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (b == kLinkBegin) {</div>
-<div class="line"><a id="l00886" name="l00886"></a><span class="lineno">  886</span>        cur = PageLink();</div>
-<div class="line"><a id="l00887" name="l00887"></a><span class="lineno">  887</span>        cur.begin = out.size();</div>
-<div class="line"><a id="l00888" name="l00888"></a><span class="lineno">  888</span>        cur.target.clear();</div>
-<div class="line"><a id="l00889" name="l00889"></a><span class="lineno">  889</span>        inTarget = inLink = <span class="keyword">true</span>;</div>
-<div class="line"><a id="l00890" name="l00890"></a><span class="lineno">  890</span>      } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (inTarget) {</div>
-<div class="line"><a id="l00891" name="l00891"></a><span class="lineno">  891</span>        <span class="keywordflow">if</span> (b == kLinkTarget) inTarget = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00892" name="l00892"></a><span class="lineno">  892</span>        <span class="keywordflow">else</span> cur.target.push_back(ch);</div>
-<div class="line"><a id="l00893" name="l00893"></a><span class="lineno">  893</span>      } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (b == kLinkEnd) {</div>
-<div class="line"><a id="l00894" name="l00894"></a><span class="lineno">  894</span>        <span class="keywordflow">if</span> (inLink &amp;&amp; cur.end &gt; cur.begin) links.push_back(cur);</div>
-<div class="line"><a id="l00895" name="l00895"></a><span class="lineno">  895</span>        inLink = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00896" name="l00896"></a><span class="lineno">  896</span>      } <span class="keywordflow">else</span> {</div>
-<div class="line"><a id="l00897" name="l00897"></a><span class="lineno">  897</span>        out.push_back(ch);</div>
-<div class="line"><a id="l00898" name="l00898"></a><span class="lineno">  898</span>        <span class="keywordflow">if</span> (inLink) cur.end = out.size();</div>
-<div class="line"><a id="l00899" name="l00899"></a><span class="lineno">  899</span>      }</div>
-<div class="line"><a id="l00900" name="l00900"></a><span class="lineno">  900</span>    }</div>
-<div class="line"><a id="l00901" name="l00901"></a><span class="lineno">  901</span>    <span class="comment">// a link or heading cut by the end of the page: keep its visible part</span></div>
-<div class="line"><a id="l00902" name="l00902"></a><span class="lineno">  902</span>    <span class="keywordflow">if</span> (inLink &amp;&amp; !inTarget &amp;&amp; cur.end &gt; cur.begin) links.push_back(cur);</div>
-<div class="line"><a id="l00903" name="l00903"></a><span class="lineno">  903</span>    <span class="keywordflow">if</span> (inHead &amp;&amp; out.size() &gt; headBegin) headings.push_back(Span{headBegin, out.size()});</div>
-<div class="line"><a id="l00904" name="l00904"></a><span class="lineno">  904</span>  }</div>
-<div class="line"><a id="l00905" name="l00905"></a><span class="lineno">  905</span> </div>
-<div class="line"><a id="l00908" name="l00908"></a><span class="lineno">  908</span>  <span class="keywordtype">bool</span> fitText(std::string&amp; text) {</div>
-<div class="line"><a id="l00909" name="l00909"></a><span class="lineno">  909</span>    <span class="keywordtype">bool</span> cut = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00910" name="l00910"></a><span class="lineno">  910</span>    std::string shown;</div>
-<div class="line"><a id="l00911" name="l00911"></a><span class="lineno">  911</span>    std::vector&lt;PageLink&gt; links;</div>
-<div class="line"><a id="l00912" name="l00912"></a><span class="lineno">  912</span>    std::vector&lt;Span&gt; headings;</div>
-<div class="line"><a id="l00913" name="l00913"></a><span class="lineno">  913</span>    <span class="comment">// the text block gets the headings too: its height depends on them</span></div>
-<div class="line"><a id="l00914" name="l00914"></a><span class="lineno">  914</span>    stripLinks(text, shown, links, headings);</div>
-<div class="line"><a id="l00915" name="l00915"></a><span class="lineno">  915</span>    text_.setPage(shown, links, headings);</div>
-<div class="line"><a id="l00916" name="l00916"></a><span class="lineno">  916</span>    <span class="keywordflow">while</span> (!text.empty() &amp;&amp; text_.textHeight(text_.bounds.w) &gt; text_.bounds.h) {</div>
-<div class="line"><a id="l00917" name="l00917"></a><span class="lineno">  917</span>      <span class="keywordflow">if</span> (text.size() &lt; 2) <span class="keywordflow">break</span>;</div>
-<div class="line"><a id="l00918" name="l00918"></a><span class="lineno">  918</span>      <span class="keywordtype">size_t</span> sp = text.find_last_of(<span class="stringliteral">&quot; \n\t\r&quot;</span>, text.size() - 2);</div>
-<div class="line"><a id="l00919" name="l00919"></a><span class="lineno">  919</span>      <span class="keywordflow">if</span> (sp == std::string::npos || sp == 0) <span class="keywordflow">break</span>;</div>
-<div class="line"><a id="l00920" name="l00920"></a><span class="lineno">  920</span>      text.resize(sp);</div>
-<div class="line"><a id="l00921" name="l00921"></a><span class="lineno">  921</span>      cut = <span class="keyword">true</span>;</div>
-<div class="line"><a id="l00922" name="l00922"></a><span class="lineno">  922</span>      stripLinks(text, shown, links, headings);</div>
-<div class="line"><a id="l00923" name="l00923"></a><span class="lineno">  923</span>      text_.setPage(shown, links, headings);</div>
-<div class="line"><a id="l00924" name="l00924"></a><span class="lineno">  924</span>    }</div>
-<div class="line"><a id="l00925" name="l00925"></a><span class="lineno">  925</span>    <span class="keywordflow">return</span> cut;</div>
-<div class="line"><a id="l00926" name="l00926"></a><span class="lineno">  926</span>  }</div>
-<div class="line"><a id="l00927" name="l00927"></a><span class="lineno">  927</span> </div>
-<div class="line"><a id="l00928" name="l00928"></a><span class="lineno">  928</span>  Doc&amp; doc_;</div>
-<div class="line"><a id="l00929" name="l00929"></a><span class="lineno">  929</span>  <span class="comment">// the themes must outlive the app: the screen keeps a pointer to them</span></div>
-<div class="line"><a id="l00930" name="l00930"></a><span class="lineno">  930</span>  <span class="comment">// the text is drawn with TinyFonts (Latin-1 characters, unlike the bitmap fonts)</span></div>
-<div class="line"><a id="l00931" name="l00931"></a><span class="lineno">  931</span>  tinyfonts::TinyGPUFont&lt;RGB_T&gt; labelFont_{Lato8};</div>
-<div class="line"><a id="l00932" name="l00932"></a><span class="lineno">  932</span>  tinyfonts::TinyGPUFont&lt;RGB_T&gt; bodyFont_{Lato10};</div>
-<div class="line"><a id="l00933" name="l00933"></a><span class="lineno">  933</span>  tinyfonts::TinyGPUFont&lt;RGB_T&gt; titleFont_{Lato16};</div>
-<div class="line"><a id="l00934" name="l00934"></a><span class="lineno">  934</span>  tinyfonts::TinyGPUFont&lt;RGB_T&gt; headlineFont_{Lato32};</div>
-<div class="line"><a id="l00935" name="l00935"></a><span class="lineno">  935</span>  tinymd::MaterialTheme&lt;RGB_T&gt; darkTheme_ = tinymd::defaultDarkTheme&lt;RGB_T&gt;();</div>
-<div class="line"><a id="l00936" name="l00936"></a><span class="lineno">  936</span>  tinymd::MaterialTheme&lt;RGB_T&gt; lightTheme_ = tinymd::defaultTheme&lt;RGB_T&gt;();</div>
-<div class="line"><a id="l00937" name="l00937"></a><span class="lineno">  937</span>  tinymd::App&lt;RGB_T&gt; app_;</div>
-<div class="line"><a id="l00938" name="l00938"></a><span class="lineno">  938</span>  PageTextBlock text_;</div>
-<div class="line"><a id="l00939" name="l00939"></a><span class="lineno">  939</span>  tinymd::Button&lt;RGB_T&gt; prev_;</div>
-<div class="line"><a id="l00940" name="l00940"></a><span class="lineno">  940</span>  tinymd::Button&lt;RGB_T&gt; next_;</div>
-<div class="line"><a id="l00941" name="l00941"></a><span class="lineno">  941</span>  tinymd::AppBar&lt;RGB_T&gt; appBar_;</div>
-<div class="line"><a id="l00942" name="l00942"></a><span class="lineno">  942</span>  tinymd::Label&lt;RGB_T&gt; pageLabel_;</div>
-<div class="line"><a id="l00943" name="l00943"></a><span class="lineno">  943</span>  tinymd::IconButton&lt;RGB_T&gt; menuButton_;</div>
-<div class="line"><a id="l00944" name="l00944"></a><span class="lineno">  944</span>  tinymd::Menu&lt;RGB_T&gt; menu_;</div>
-<div class="line"><a id="l00945" name="l00945"></a><span class="lineno">  945</span>  tinymd::ListItem&lt;RGB_T&gt; startItem_;</div>
-<div class="line"><a id="l00946" name="l00946"></a><span class="lineno">  946</span>  tinymd::ListItem&lt;RGB_T&gt; openItem_;</div>
-<div class="line"><a id="l00947" name="l00947"></a><span class="lineno">  947</span>  tinymd::FileDialog&lt;RGB_T&gt; fileDialog_;</div>
-<div class="line"><a id="l00948" name="l00948"></a><span class="lineno">  948</span>  tinymd::ListItem&lt;RGB_T&gt; bookmarksItem_;</div>
-<div class="line"><a id="l00949" name="l00949"></a><span class="lineno">  949</span>  tinymd::Container&lt;RGB_T&gt; bookmarksPanel_;</div>
-<div class="line"><a id="l00950" name="l00950"></a><span class="lineno">  950</span>  tinymd::Card&lt;RGB_T&gt; bookmarksBackground_;</div>
-<div class="line"><a id="l00951" name="l00951"></a><span class="lineno">  951</span>  std::vector&lt;std::unique_ptr&lt;tinymd::ListItem&lt;RGB_T&gt;&gt;&gt; bookmarkRows_;</div>
-<div class="line"><a id="l00952" name="l00952"></a><span class="lineno">  952</span>  std::vector&lt;Bookmark&gt; bookmarks_;</div>
-<div class="line"><a id="l00953" name="l00953"></a><span class="lineno">  953</span>  std::vector&lt;Jump&gt; history_;  <span class="comment">// the pages that links were followed from</span></div>
-<div class="line"><a id="l00954" name="l00954"></a><span class="lineno">  954</span>  tinymd::ListItem&lt;RGB_T&gt; settingsItem_;</div>
-<div class="line"><a id="l00955" name="l00955"></a><span class="lineno">  955</span>  tinymd::ListItem&lt;RGB_T&gt; aboutItem_;</div>
-<div class="line"><a id="l00956" name="l00956"></a><span class="lineno">  956</span>  tinymd::ListItem&lt;RGB_T&gt; closeItem_;</div>
-<div class="line"><a id="l00957" name="l00957"></a><span class="lineno">  957</span>  tinymd::Dialog&lt;RGB_T&gt; about_;</div>
-<div class="line"><a id="l00958" name="l00958"></a><span class="lineno">  958</span>  tinymd::Button&lt;RGB_T&gt; aboutOk_;</div>
-<div class="line"><a id="l00959" name="l00959"></a><span class="lineno">  959</span>  tinymd::Container&lt;RGB_T&gt; settings_;</div>
-<div class="line"><a id="l00960" name="l00960"></a><span class="lineno">  960</span>  tinymd::Card&lt;RGB_T&gt; settingsBackground_;</div>
-<div class="line"><a id="l00961" name="l00961"></a><span class="lineno">  961</span>  tinymd::Label&lt;RGB_T&gt; settingsTitle_;</div>
-<div class="line"><a id="l00962" name="l00962"></a><span class="lineno">  962</span>  tinymd::Label&lt;RGB_T&gt; darkLabel_;</div>
-<div class="line"><a id="l00963" name="l00963"></a><span class="lineno">  963</span>  tinymd::Switch&lt;RGB_T&gt; darkSwitch_;</div>
-<div class="line"><a id="l00964" name="l00964"></a><span class="lineno">  964</span>  tinymd::Label&lt;RGB_T&gt; buttonsLabel_;</div>
-<div class="line"><a id="l00965" name="l00965"></a><span class="lineno">  965</span>  tinymd::Switch&lt;RGB_T&gt; buttonsSwitch_;</div>
-<div class="line"><a id="l00966" name="l00966"></a><span class="lineno">  966</span>  tinymd::Label&lt;RGB_T&gt; pageNumberRowLabel_;</div>
-<div class="line"><a id="l00967" name="l00967"></a><span class="lineno">  967</span>  tinymd::Switch&lt;RGB_T&gt; pageNumberSwitch_;</div>
-<div class="line"><a id="l00968" name="l00968"></a><span class="lineno">  968</span>  tinymd::Label&lt;RGB_T&gt; settingsHint_;</div>
-<div class="line"><a id="l00969" name="l00969"></a><span class="lineno">  969</span>  tinymd::Button&lt;RGB_T&gt; settingsDone_;</div>
-<div class="line"><a id="l00970" name="l00970"></a><span class="lineno">  970</span>  MobiCover&lt;RGB_T, Doc&gt; cover_;</div>
-<div class="line"><a id="l00971" name="l00971"></a><span class="lineno">  971</span>  <span class="keywordtype">bool</span> coverShown_ = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00972" name="l00972"></a><span class="lineno">  972</span>  <span class="keywordtype">bool</span> reopenDialog_ = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00973" name="l00973"></a><span class="lineno">  973</span>  <span class="keywordtype">bool</span> dark_ = <span class="keyword">true</span>;</div>
-<div class="line"><a id="l00974" name="l00974"></a><span class="lineno">  974</span>  <span class="keywordtype">bool</span> buttonsVisible_ = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00975" name="l00975"></a><span class="lineno">  975</span>  <span class="keywordtype">bool</span> pageNumberVisible_ = <span class="keyword">true</span>;</div>
-<div class="line"><a id="l00976" name="l00976"></a><span class="lineno">  976</span>  std::string bookTitle_;</div>
-<div class="line"><a id="l00977" name="l00977"></a><span class="lineno">  977</span>  std::string aboutText_;</div>
-<div class="line"><a id="l00978" name="l00978"></a><span class="lineno">  978</span>  std::vector&lt;Position&gt; starts_;  <span class="comment">// page starts known so far: starts_[0] is the first page</span></div>
-<div class="line"><a id="l00979" name="l00979"></a><span class="lineno">  979</span>  uint32_t current_ = 0;  <span class="comment">// index of the shown page</span></div>
-<div class="line"><a id="l00980" name="l00980"></a><span class="lineno">  980</span>};</div>
+<div class="line"><a id="l00873" name="l00873"></a><span class="lineno">  873</span>  <span class="keyword">static</span> <span class="keywordtype">void</span> stripLinks(<span class="keyword">const</span> std::string&amp; text, std::string&amp; out, std::vector&lt;PageLink&gt;&amp; links,</div>
+<div class="line"><a id="l00874" name="l00874"></a><span class="lineno">  874</span>                         std::vector&lt;Span&gt;&amp; headings, <span class="keyword">const</span> std::string&amp; hiddenHeading) {</div>
+<div class="line"><a id="l00875" name="l00875"></a><span class="lineno">  875</span>    out.clear();</div>
+<div class="line"><a id="l00876" name="l00876"></a><span class="lineno">  876</span>    links.clear();</div>
+<div class="line"><a id="l00877" name="l00877"></a><span class="lineno">  877</span>    headings.clear();</div>
+<div class="line"><a id="l00878" name="l00878"></a><span class="lineno">  878</span>    PageLink cur;</div>
+<div class="line"><a id="l00879" name="l00879"></a><span class="lineno">  879</span>    <span class="keywordtype">size_t</span> headBegin = 0;</div>
+<div class="line"><a id="l00880" name="l00880"></a><span class="lineno">  880</span>    <span class="keywordtype">bool</span> inHead = <span class="keyword">false</span>, inTarget = <span class="keyword">false</span>, inLink = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00881" name="l00881"></a><span class="lineno">  881</span>    <span class="keywordflow">for</span> (<span class="keywordtype">char</span> ch : text) {</div>
+<div class="line"><a id="l00882" name="l00882"></a><span class="lineno">  882</span>      <span class="keyword">const</span> uint8_t b = <span class="keyword">static_cast&lt;</span>uint8_t<span class="keyword">&gt;</span>(ch);</div>
+<div class="line"><a id="l00883" name="l00883"></a><span class="lineno">  883</span>      <span class="keywordflow">if</span> (b == kHeadBegin) {</div>
+<div class="line"><a id="l00884" name="l00884"></a><span class="lineno">  884</span>        headBegin = out.size();</div>
+<div class="line"><a id="l00885" name="l00885"></a><span class="lineno">  885</span>        inHead = <span class="keyword">true</span>;</div>
+<div class="line"><a id="l00886" name="l00886"></a><span class="lineno">  886</span>      } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (b == kHeadEnd) {</div>
+<div class="line"><a id="l00887" name="l00887"></a><span class="lineno">  887</span>        <span class="keywordflow">if</span> (inHead &amp;&amp; out.size() &gt; headBegin) headings.push_back(Span{headBegin, out.size()});</div>
+<div class="line"><a id="l00888" name="l00888"></a><span class="lineno">  888</span>        inHead = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00889" name="l00889"></a><span class="lineno">  889</span>      } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (b == kLinkBegin) {</div>
+<div class="line"><a id="l00890" name="l00890"></a><span class="lineno">  890</span>        cur = PageLink();</div>
+<div class="line"><a id="l00891" name="l00891"></a><span class="lineno">  891</span>        cur.begin = out.size();</div>
+<div class="line"><a id="l00892" name="l00892"></a><span class="lineno">  892</span>        cur.target.clear();</div>
+<div class="line"><a id="l00893" name="l00893"></a><span class="lineno">  893</span>        inTarget = inLink = <span class="keyword">true</span>;</div>
+<div class="line"><a id="l00894" name="l00894"></a><span class="lineno">  894</span>      } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (inTarget) {</div>
+<div class="line"><a id="l00895" name="l00895"></a><span class="lineno">  895</span>        <span class="keywordflow">if</span> (b == kLinkTarget) inTarget = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00896" name="l00896"></a><span class="lineno">  896</span>        <span class="keywordflow">else</span> cur.target.push_back(ch);</div>
+<div class="line"><a id="l00897" name="l00897"></a><span class="lineno">  897</span>      } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (b == kLinkEnd) {</div>
+<div class="line"><a id="l00898" name="l00898"></a><span class="lineno">  898</span>        <span class="keywordflow">if</span> (inLink &amp;&amp; cur.end &gt; cur.begin) links.push_back(cur);</div>
+<div class="line"><a id="l00899" name="l00899"></a><span class="lineno">  899</span>        inLink = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00900" name="l00900"></a><span class="lineno">  900</span>      } <span class="keywordflow">else</span> {</div>
+<div class="line"><a id="l00901" name="l00901"></a><span class="lineno">  901</span>        <span class="keywordflow">if</span> (b == <span class="charliteral">&#39;\n&#39;</span> &amp;&amp; out.empty()) <span class="keywordflow">continue</span>;  <span class="comment">// no empty line at the top of the page</span></div>
+<div class="line"><a id="l00902" name="l00902"></a><span class="lineno">  902</span>        out.push_back(ch);</div>
+<div class="line"><a id="l00903" name="l00903"></a><span class="lineno">  903</span>        <span class="keywordflow">if</span> (inLink) cur.end = out.size();</div>
+<div class="line"><a id="l00904" name="l00904"></a><span class="lineno">  904</span>      }</div>
+<div class="line"><a id="l00905" name="l00905"></a><span class="lineno">  905</span>    }</div>
+<div class="line"><a id="l00906" name="l00906"></a><span class="lineno">  906</span>    <span class="comment">// a link or heading cut by the end of the page: keep its visible part</span></div>
+<div class="line"><a id="l00907" name="l00907"></a><span class="lineno">  907</span>    <span class="keywordflow">if</span> (inLink &amp;&amp; !inTarget &amp;&amp; cur.end &gt; cur.begin) links.push_back(cur);</div>
+<div class="line"><a id="l00908" name="l00908"></a><span class="lineno">  908</span>    <span class="keywordflow">if</span> (inHead &amp;&amp; out.size() &gt; headBegin) headings.push_back(Span{headBegin, out.size()});</div>
+<div class="line"><a id="l00909" name="l00909"></a><span class="lineno">  909</span> </div>
+<div class="line"><a id="l00910" name="l00910"></a><span class="lineno">  910</span>    <span class="comment">// a first heading that is the book title is not shown again (the title bar has it)</span></div>
+<div class="line"><a id="l00911" name="l00911"></a><span class="lineno">  911</span>    <span class="keywordflow">if</span> (!headings.empty() &amp;&amp; headings[0].begin == 0 &amp;&amp; !hiddenHeading.empty() &amp;&amp;</div>
+<div class="line"><a id="l00912" name="l00912"></a><span class="lineno">  912</span>        trimmed(out.substr(0, headings[0].end)) == trimmed(hiddenHeading)) {</div>
+<div class="line"><a id="l00913" name="l00913"></a><span class="lineno">  913</span>      <span class="keywordtype">size_t</span> cut = headings[0].end;</div>
+<div class="line"><a id="l00914" name="l00914"></a><span class="lineno">  914</span>      <span class="keywordflow">while</span> (cut &lt; out.size() &amp;&amp; out[cut] == <span class="charliteral">&#39;\n&#39;</span>) ++cut;</div>
+<div class="line"><a id="l00915" name="l00915"></a><span class="lineno">  915</span>      out.erase(0, cut);</div>
+<div class="line"><a id="l00916" name="l00916"></a><span class="lineno">  916</span>      headings.erase(headings.begin());</div>
+<div class="line"><a id="l00917" name="l00917"></a><span class="lineno">  917</span>      <span class="keywordflow">for</span> (Span&amp; h : headings) {</div>
+<div class="line"><a id="l00918" name="l00918"></a><span class="lineno">  918</span>        h.begin -= cut;</div>
+<div class="line"><a id="l00919" name="l00919"></a><span class="lineno">  919</span>        h.end -= cut;</div>
+<div class="line"><a id="l00920" name="l00920"></a><span class="lineno">  920</span>      }</div>
+<div class="line"><a id="l00921" name="l00921"></a><span class="lineno">  921</span>      std::vector&lt;PageLink&gt; kept;</div>
+<div class="line"><a id="l00922" name="l00922"></a><span class="lineno">  922</span>      <span class="keywordflow">for</span> (PageLink&amp; l : links) {</div>
+<div class="line"><a id="l00923" name="l00923"></a><span class="lineno">  923</span>        <span class="keywordflow">if</span> (l.begin &lt; cut) <span class="keywordflow">continue</span>;</div>
+<div class="line"><a id="l00924" name="l00924"></a><span class="lineno">  924</span>        l.begin -= cut;</div>
+<div class="line"><a id="l00925" name="l00925"></a><span class="lineno">  925</span>        l.end -= cut;</div>
+<div class="line"><a id="l00926" name="l00926"></a><span class="lineno">  926</span>        kept.push_back(l);</div>
+<div class="line"><a id="l00927" name="l00927"></a><span class="lineno">  927</span>      }</div>
+<div class="line"><a id="l00928" name="l00928"></a><span class="lineno">  928</span>      links.swap(kept);</div>
+<div class="line"><a id="l00929" name="l00929"></a><span class="lineno">  929</span>    }</div>
+<div class="line"><a id="l00930" name="l00930"></a><span class="lineno">  930</span>  }</div>
+<div class="line"><a id="l00931" name="l00931"></a><span class="lineno">  931</span> </div>
+<div class="line"><a id="l00932" name="l00932"></a><span class="lineno">  932</span>  <span class="keyword">static</span> std::string trimmed(<span class="keyword">const</span> std::string&amp; t) {</div>
+<div class="line"><a id="l00933" name="l00933"></a><span class="lineno">  933</span>    <span class="keyword">const</span> <span class="keywordtype">size_t</span> b = t.find_first_not_of(<span class="stringliteral">&quot; \n\t\r&quot;</span>);</div>
+<div class="line"><a id="l00934" name="l00934"></a><span class="lineno">  934</span>    <span class="keywordflow">if</span> (b == std::string::npos) <span class="keywordflow">return</span> std::string();</div>
+<div class="line"><a id="l00935" name="l00935"></a><span class="lineno">  935</span>    <span class="keyword">const</span> <span class="keywordtype">size_t</span> e = t.find_last_not_of(<span class="stringliteral">&quot; \n\t\r&quot;</span>);</div>
+<div class="line"><a id="l00936" name="l00936"></a><span class="lineno">  936</span>    <span class="keywordflow">return</span> t.substr(b, e - b + 1);</div>
+<div class="line"><a id="l00937" name="l00937"></a><span class="lineno">  937</span>  }</div>
+<div class="line"><a id="l00938" name="l00938"></a><span class="lineno">  938</span> </div>
+<div class="line"><a id="l00941" name="l00941"></a><span class="lineno">  941</span>  <span class="keywordtype">bool</span> fitText(std::string&amp; text) {</div>
+<div class="line"><a id="l00942" name="l00942"></a><span class="lineno">  942</span>    <span class="keywordtype">bool</span> cut = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00943" name="l00943"></a><span class="lineno">  943</span>    std::string shown;</div>
+<div class="line"><a id="l00944" name="l00944"></a><span class="lineno">  944</span>    std::vector&lt;PageLink&gt; links;</div>
+<div class="line"><a id="l00945" name="l00945"></a><span class="lineno">  945</span>    std::vector&lt;Span&gt; headings;</div>
+<div class="line"><a id="l00946" name="l00946"></a><span class="lineno">  946</span>    <span class="comment">// the text block gets the headings too: its height depends on them</span></div>
+<div class="line"><a id="l00947" name="l00947"></a><span class="lineno">  947</span>    stripLinks(text, shown, links, headings, bookTitle_);</div>
+<div class="line"><a id="l00948" name="l00948"></a><span class="lineno">  948</span>    text_.setPage(shown, links, headings);</div>
+<div class="line"><a id="l00949" name="l00949"></a><span class="lineno">  949</span>    <span class="keywordflow">while</span> (!text.empty() &amp;&amp; text_.textHeight(text_.bounds.w) &gt; text_.bounds.h) {</div>
+<div class="line"><a id="l00950" name="l00950"></a><span class="lineno">  950</span>      <span class="keywordflow">if</span> (text.size() &lt; 2) <span class="keywordflow">break</span>;</div>
+<div class="line"><a id="l00951" name="l00951"></a><span class="lineno">  951</span>      <span class="keywordtype">size_t</span> sp = text.find_last_of(<span class="stringliteral">&quot; \n\t\r&quot;</span>, text.size() - 2);</div>
+<div class="line"><a id="l00952" name="l00952"></a><span class="lineno">  952</span>      <span class="keywordflow">if</span> (sp == std::string::npos || sp == 0) <span class="keywordflow">break</span>;</div>
+<div class="line"><a id="l00953" name="l00953"></a><span class="lineno">  953</span>      text.resize(sp);</div>
+<div class="line"><a id="l00954" name="l00954"></a><span class="lineno">  954</span>      cut = <span class="keyword">true</span>;</div>
+<div class="line"><a id="l00955" name="l00955"></a><span class="lineno">  955</span>      stripLinks(text, shown, links, headings, bookTitle_);</div>
+<div class="line"><a id="l00956" name="l00956"></a><span class="lineno">  956</span>      text_.setPage(shown, links, headings);</div>
+<div class="line"><a id="l00957" name="l00957"></a><span class="lineno">  957</span>    }</div>
+<div class="line"><a id="l00958" name="l00958"></a><span class="lineno">  958</span>    <span class="keywordflow">return</span> cut;</div>
+<div class="line"><a id="l00959" name="l00959"></a><span class="lineno">  959</span>  }</div>
+<div class="line"><a id="l00960" name="l00960"></a><span class="lineno">  960</span> </div>
+<div class="line"><a id="l00961" name="l00961"></a><span class="lineno">  961</span>  Doc&amp; doc_;</div>
+<div class="line"><a id="l00962" name="l00962"></a><span class="lineno">  962</span>  <span class="comment">// the themes must outlive the app: the screen keeps a pointer to them</span></div>
+<div class="line"><a id="l00963" name="l00963"></a><span class="lineno">  963</span>  <span class="comment">// the text is drawn with TinyFonts (Latin-1 characters, unlike the bitmap fonts)</span></div>
+<div class="line"><a id="l00964" name="l00964"></a><span class="lineno">  964</span>  TinyGPUFont&lt;RGB_T&gt; labelFont_{Lato8};</div>
+<div class="line"><a id="l00965" name="l00965"></a><span class="lineno">  965</span>  TinyGPUFont&lt;RGB_T&gt; bodyFont_{Lato10};</div>
+<div class="line"><a id="l00966" name="l00966"></a><span class="lineno">  966</span>  TinyGPUFont&lt;RGB_T&gt; titleFont_{Lato16};</div>
+<div class="line"><a id="l00967" name="l00967"></a><span class="lineno">  967</span>  TinyGPUFont&lt;RGB_T&gt; headlineFont_{Lato32};</div>
+<div class="line"><a id="l00968" name="l00968"></a><span class="lineno">  968</span>  tinymd::MaterialTheme&lt;RGB_T&gt; darkTheme_ = tinymd::defaultDarkTheme&lt;RGB_T&gt;();</div>
+<div class="line"><a id="l00969" name="l00969"></a><span class="lineno">  969</span>  tinymd::MaterialTheme&lt;RGB_T&gt; lightTheme_ = tinymd::defaultTheme&lt;RGB_T&gt;();</div>
+<div class="line"><a id="l00970" name="l00970"></a><span class="lineno">  970</span>  tinymd::App&lt;RGB_T&gt; app_;</div>
+<div class="line"><a id="l00971" name="l00971"></a><span class="lineno">  971</span>  PageTextBlock text_;</div>
+<div class="line"><a id="l00972" name="l00972"></a><span class="lineno">  972</span>  tinymd::Button&lt;RGB_T&gt; prev_;</div>
+<div class="line"><a id="l00973" name="l00973"></a><span class="lineno">  973</span>  tinymd::Button&lt;RGB_T&gt; next_;</div>
+<div class="line"><a id="l00974" name="l00974"></a><span class="lineno">  974</span>  tinymd::AppBar&lt;RGB_T&gt; appBar_;</div>
+<div class="line"><a id="l00975" name="l00975"></a><span class="lineno">  975</span>  tinymd::Label&lt;RGB_T&gt; pageLabel_;</div>
+<div class="line"><a id="l00976" name="l00976"></a><span class="lineno">  976</span>  tinymd::IconButton&lt;RGB_T&gt; menuButton_;</div>
+<div class="line"><a id="l00977" name="l00977"></a><span class="lineno">  977</span>  tinymd::Menu&lt;RGB_T&gt; menu_;</div>
+<div class="line"><a id="l00978" name="l00978"></a><span class="lineno">  978</span>  tinymd::ListItem&lt;RGB_T&gt; startItem_;</div>
+<div class="line"><a id="l00979" name="l00979"></a><span class="lineno">  979</span>  tinymd::ListItem&lt;RGB_T&gt; openItem_;</div>
+<div class="line"><a id="l00980" name="l00980"></a><span class="lineno">  980</span>  tinymd::FileDialog&lt;RGB_T&gt; fileDialog_;</div>
+<div class="line"><a id="l00981" name="l00981"></a><span class="lineno">  981</span>  tinymd::ListItem&lt;RGB_T&gt; bookmarksItem_;</div>
+<div class="line"><a id="l00982" name="l00982"></a><span class="lineno">  982</span>  tinymd::Container&lt;RGB_T&gt; bookmarksPanel_;</div>
+<div class="line"><a id="l00983" name="l00983"></a><span class="lineno">  983</span>  tinymd::Card&lt;RGB_T&gt; bookmarksBackground_;</div>
+<div class="line"><a id="l00984" name="l00984"></a><span class="lineno">  984</span>  std::vector&lt;std::unique_ptr&lt;tinymd::ListItem&lt;RGB_T&gt;&gt;&gt; bookmarkRows_;</div>
+<div class="line"><a id="l00985" name="l00985"></a><span class="lineno">  985</span>  std::vector&lt;Bookmark&gt; bookmarks_;</div>
+<div class="line"><a id="l00986" name="l00986"></a><span class="lineno">  986</span>  std::vector&lt;Jump&gt; history_;  <span class="comment">// the pages that links were followed from</span></div>
+<div class="line"><a id="l00987" name="l00987"></a><span class="lineno">  987</span>  tinymd::ListItem&lt;RGB_T&gt; settingsItem_;</div>
+<div class="line"><a id="l00988" name="l00988"></a><span class="lineno">  988</span>  tinymd::ListItem&lt;RGB_T&gt; aboutItem_;</div>
+<div class="line"><a id="l00989" name="l00989"></a><span class="lineno">  989</span>  tinymd::ListItem&lt;RGB_T&gt; closeItem_;</div>
+<div class="line"><a id="l00990" name="l00990"></a><span class="lineno">  990</span>  tinymd::Dialog&lt;RGB_T&gt; about_;</div>
+<div class="line"><a id="l00991" name="l00991"></a><span class="lineno">  991</span>  tinymd::Button&lt;RGB_T&gt; aboutOk_;</div>
+<div class="line"><a id="l00992" name="l00992"></a><span class="lineno">  992</span>  tinymd::Container&lt;RGB_T&gt; settings_;</div>
+<div class="line"><a id="l00993" name="l00993"></a><span class="lineno">  993</span>  tinymd::Card&lt;RGB_T&gt; settingsBackground_;</div>
+<div class="line"><a id="l00994" name="l00994"></a><span class="lineno">  994</span>  tinymd::Label&lt;RGB_T&gt; settingsTitle_;</div>
+<div class="line"><a id="l00995" name="l00995"></a><span class="lineno">  995</span>  tinymd::Label&lt;RGB_T&gt; darkLabel_;</div>
+<div class="line"><a id="l00996" name="l00996"></a><span class="lineno">  996</span>  tinymd::Switch&lt;RGB_T&gt; darkSwitch_;</div>
+<div class="line"><a id="l00997" name="l00997"></a><span class="lineno">  997</span>  tinymd::Label&lt;RGB_T&gt; buttonsLabel_;</div>
+<div class="line"><a id="l00998" name="l00998"></a><span class="lineno">  998</span>  tinymd::Switch&lt;RGB_T&gt; buttonsSwitch_;</div>
+<div class="line"><a id="l00999" name="l00999"></a><span class="lineno">  999</span>  tinymd::Label&lt;RGB_T&gt; pageNumberRowLabel_;</div>
+<div class="line"><a id="l01000" name="l01000"></a><span class="lineno"> 1000</span>  tinymd::Switch&lt;RGB_T&gt; pageNumberSwitch_;</div>
+<div class="line"><a id="l01001" name="l01001"></a><span class="lineno"> 1001</span>  tinymd::Label&lt;RGB_T&gt; settingsHint_;</div>
+<div class="line"><a id="l01002" name="l01002"></a><span class="lineno"> 1002</span>  tinymd::Button&lt;RGB_T&gt; settingsDone_;</div>
+<div class="line"><a id="l01003" name="l01003"></a><span class="lineno"> 1003</span>  MobiCover&lt;RGB_T, Doc&gt; cover_;</div>
+<div class="line"><a id="l01004" name="l01004"></a><span class="lineno"> 1004</span>  <span class="keywordtype">bool</span> coverShown_ = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l01005" name="l01005"></a><span class="lineno"> 1005</span>  <span class="keywordtype">bool</span> reopenDialog_ = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l01006" name="l01006"></a><span class="lineno"> 1006</span>  <span class="keywordtype">bool</span> dark_ = <span class="keyword">true</span>;</div>
+<div class="line"><a id="l01007" name="l01007"></a><span class="lineno"> 1007</span>  <span class="keywordtype">bool</span> buttonsVisible_ = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l01008" name="l01008"></a><span class="lineno"> 1008</span>  <span class="keywordtype">bool</span> pageNumberVisible_ = <span class="keyword">true</span>;</div>
+<div class="line"><a id="l01009" name="l01009"></a><span class="lineno"> 1009</span>  std::string bookTitle_;</div>
+<div class="line"><a id="l01010" name="l01010"></a><span class="lineno"> 1010</span>  std::string aboutText_;</div>
+<div class="line"><a id="l01011" name="l01011"></a><span class="lineno"> 1011</span>  std::vector&lt;Position&gt; starts_;  <span class="comment">// page starts known so far: starts_[0] is the first page</span></div>
+<div class="line"><a id="l01012" name="l01012"></a><span class="lineno"> 1012</span>  uint32_t current_ = 0;  <span class="comment">// index of the shown page</span></div>
+<div class="line"><a id="l01013" name="l01013"></a><span class="lineno"> 1013</span>};</div>
 </div>
-<div class="line"><a id="l00981" name="l00981"></a><span class="lineno">  981</span> </div>
-<div class="line"><a id="l00982" name="l00982"></a><span class="lineno">  982</span>}  <span class="comment">// namespace tinymobi</span></div>
+<div class="line"><a id="l01014" name="l01014"></a><span class="lineno"> 1014</span> </div>
+<div class="line"><a id="l01015" name="l01015"></a><span class="lineno"> 1015</span>}  <span class="comment">// namespace tinymobi</span></div>
 <div class="ttc" id="aMobiReaderCover_8h_html"><div class="ttname"><a href="MobiReaderCover_8h.html">MobiReaderCover.h</a></div><div class="ttdoc">The JPEG cover of a book for the reader GUI: decoded with TinyJPEG into a sprite, and shown full scre...</div></div>
 <div class="ttc" id="aTinyMobi_8h_html"><div class="ttname"><a href="TinyMobi_8h.html">TinyMobi.h</a></div></div>
 <div class="ttc" id="aclasstinymobi_1_1MobiReaderApp_html"><div class="ttname"><a href="classtinymobi_1_1MobiReaderApp.html">tinymobi::MobiReaderApp</a></div><div class="ttdoc">The book reader GUI for TinyMaterialDesign: a full screen JPEG cover, then the book text one page at ...</div><div class="ttdef"><b>Definition</b> MobiReaderApp.h:67</div></div>
