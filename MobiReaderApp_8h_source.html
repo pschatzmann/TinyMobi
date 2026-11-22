@@ -370,7 +370,7 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00342" name="l00342"></a><span class="lineno">  342</span>  <span class="keyword">static</span> <span class="keyword">constexpr</span> <span class="keywordtype">size_t</span> kMaxHistory = 32;</div>
 <div class="line"><a id="l00343" name="l00343"></a><span class="lineno">  343</span> </div>
 <div class="line"><a id="l00345" name="l00345"></a><span class="lineno">  345</span>  <span class="keyword">struct </span>Bookmark {</div>
-<div class="line"><a id="l00346" name="l00346"></a><span class="lineno">  346</span>    Position start;</div>
+<div class="line"><a id="l00346" name="l00346"></a><span class="lineno">  346</span>    <a class="code hl_class" href="classtinymobi_1_1Position.html">Position</a> start;</div>
 <div class="line"><a id="l00347" name="l00347"></a><span class="lineno">  347</span>    std::string label;</div>
 <div class="line"><a id="l00348" name="l00348"></a><span class="lineno">  348</span>  };</div>
 <div class="line"><a id="l00349" name="l00349"></a><span class="lineno">  349</span> </div>
@@ -599,7 +599,7 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00594" name="l00594"></a><span class="lineno">  594</span>    startItem_ = tinymd::ListItem&lt;RGB_T&gt;(menu_.itemRect(1, itemH), <span class="stringliteral">&quot;Go to start&quot;</span>);</div>
 <div class="line"><a id="l00595" name="l00595"></a><span class="lineno">  595</span>    startItem_.onClick = [<span class="keyword">this</span>]() {</div>
 <div class="line"><a id="l00596" name="l00596"></a><span class="lineno">  596</span>      app_.screen().dismissDialog();</div>
-<div class="line"><a id="l00597" name="l00597"></a><span class="lineno">  597</span>      goTo(Position(0, 0));</div>
+<div class="line"><a id="l00597" name="l00597"></a><span class="lineno">  597</span>      goTo(<a class="code hl_class" href="classtinymobi_1_1Position.html">Position</a>(0, 0));</div>
 <div class="line"><a id="l00598" name="l00598"></a><span class="lineno">  598</span>      <span class="keywordflow">if</span> (cover_.has()) showCover();</div>
 <div class="line"><a id="l00599" name="l00599"></a><span class="lineno">  599</span>    };</div>
 <div class="line"><a id="l00600" name="l00600"></a><span class="lineno">  600</span>    menu_.addItem(startItem_);</div>
@@ -808,7 +808,7 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00818" name="l00818"></a><span class="lineno">  818</span>    <span class="keywordflow">if</span> (!eof) cut = cutAtWord(text) || cut;</div>
 <div class="line"><a id="l00819" name="l00819"></a><span class="lineno">  819</span>    cut = fitText(text) || cut;</div>
 <div class="line"><a id="l00820" name="l00820"></a><span class="lineno">  820</span>    <span class="comment">// the page ends where its text ends</span></div>
-<div class="line"><a id="l00821" name="l00821"></a><span class="lineno">  821</span>    Position end = endOf(starts_[index], text.size());</div>
+<div class="line"><a id="l00821" name="l00821"></a><span class="lineno">  821</span>    <a class="code hl_class" href="classtinymobi_1_1Position.html">Position</a> end = endOf(starts_[index], text.size());</div>
 <div class="line"><a id="l00822" name="l00822"></a><span class="lineno">  822</span>    <span class="keywordflow">if</span> (index + 1 == starts_.size() &amp;&amp; (!eof || cut) &amp;&amp; starts_.size() &lt; kMaxPages) {</div>
 <div class="line"><a id="l00823" name="l00823"></a><span class="lineno">  823</span>      starts_.push_back(end);</div>
 <div class="line"><a id="l00824" name="l00824"></a><span class="lineno">  824</span>    }</div>
@@ -823,7 +823,7 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00833" name="l00833"></a><span class="lineno">  833</span>    updateVisibility();</div>
 <div class="line"><a id="l00834" name="l00834"></a><span class="lineno">  834</span>  }</div>
 <div class="line"><a id="l00835" name="l00835"></a><span class="lineno">  835</span> </div>
-<div class="line"><a id="l00838" name="l00838"></a><span class="lineno">  838</span>  <span class="keywordtype">bool</span> readCandidate(Position start, std::string&amp; text) {</div>
+<div class="line"><a id="l00838" name="l00838"></a><span class="lineno">  838</span>  <span class="keywordtype">bool</span> readCandidate(<a class="code hl_class" href="classtinymobi_1_1Position.html">Position</a> start, std::string&amp; text) {</div>
 <div class="line"><a id="l00839" name="l00839"></a><span class="lineno">  839</span>    text.clear();</div>
 <div class="line"><a id="l00840" name="l00840"></a><span class="lineno">  840</span>    <span class="keywordflow">if</span> (doc_.seek(start) != Error::None) <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
 <div class="line"><a id="l00841" name="l00841"></a><span class="lineno">  841</span>    uint8_t b = 0;</div>
@@ -834,7 +834,7 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00846" name="l00846"></a><span class="lineno">  846</span>    <span class="keywordflow">return</span> doc_.read(&amp;b, 1) == 0;  <span class="comment">// true if nothing follows</span></div>
 <div class="line"><a id="l00847" name="l00847"></a><span class="lineno">  847</span>  }</div>
 <div class="line"><a id="l00848" name="l00848"></a><span class="lineno">  848</span> </div>
-<div class="line"><a id="l00850" name="l00850"></a><span class="lineno">  850</span>  Position endOf(Position start, <span class="keywordtype">size_t</span> n) {</div>
+<div class="line"><a id="l00850" name="l00850"></a><span class="lineno">  850</span>  <a class="code hl_class" href="classtinymobi_1_1Position.html">Position</a> endOf(<a class="code hl_class" href="classtinymobi_1_1Position.html">Position</a> start, <span class="keywordtype">size_t</span> n) {</div>
 <div class="line"><a id="l00851" name="l00851"></a><span class="lineno">  851</span>    <span class="keywordflow">if</span> (doc_.seek(start) != Error::None) <span class="keywordflow">return</span> start;</div>
 <div class="line"><a id="l00852" name="l00852"></a><span class="lineno">  852</span>    uint8_t b = 0;</div>
 <div class="line"><a id="l00853" name="l00853"></a><span class="lineno">  853</span>    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; n; ++i) {</div>
@@ -860,21 +860,21 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00880" name="l00880"></a><span class="lineno">  880</span>    <span class="keywordtype">bool</span> inHead = <span class="keyword">false</span>, inTarget = <span class="keyword">false</span>, inLink = <span class="keyword">false</span>;</div>
 <div class="line"><a id="l00881" name="l00881"></a><span class="lineno">  881</span>    <span class="keywordflow">for</span> (<span class="keywordtype">char</span> ch : text) {</div>
 <div class="line"><a id="l00882" name="l00882"></a><span class="lineno">  882</span>      <span class="keyword">const</span> uint8_t b = <span class="keyword">static_cast&lt;</span>uint8_t<span class="keyword">&gt;</span>(ch);</div>
-<div class="line"><a id="l00883" name="l00883"></a><span class="lineno">  883</span>      <span class="keywordflow">if</span> (b == kHeadBegin) {</div>
+<div class="line"><a id="l00883" name="l00883"></a><span class="lineno">  883</span>      <span class="keywordflow">if</span> (b == <a class="code hl_enumvalue" href="namespacetinymobi.html#ad714d9b410c68f0f159881d3a783eb33ad19eeaa000d448bf0888dafe16d30502">kHeadBegin</a>) {</div>
 <div class="line"><a id="l00884" name="l00884"></a><span class="lineno">  884</span>        headBegin = out.size();</div>
 <div class="line"><a id="l00885" name="l00885"></a><span class="lineno">  885</span>        inHead = <span class="keyword">true</span>;</div>
-<div class="line"><a id="l00886" name="l00886"></a><span class="lineno">  886</span>      } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (b == kHeadEnd) {</div>
+<div class="line"><a id="l00886" name="l00886"></a><span class="lineno">  886</span>      } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (b == <a class="code hl_enumvalue" href="namespacetinymobi.html#ad714d9b410c68f0f159881d3a783eb33a65c925fcaa345a6c9c6043e0c007fa4b">kHeadEnd</a>) {</div>
 <div class="line"><a id="l00887" name="l00887"></a><span class="lineno">  887</span>        <span class="keywordflow">if</span> (inHead &amp;&amp; out.size() &gt; headBegin) headings.push_back(Span{headBegin, out.size()});</div>
 <div class="line"><a id="l00888" name="l00888"></a><span class="lineno">  888</span>        inHead = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00889" name="l00889"></a><span class="lineno">  889</span>      } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (b == kLinkBegin) {</div>
+<div class="line"><a id="l00889" name="l00889"></a><span class="lineno">  889</span>      } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (b == <a class="code hl_enumvalue" href="namespacetinymobi.html#ad714d9b410c68f0f159881d3a783eb33a4a8fba039cf4aa2da8be53a3114e4fa3">kLinkBegin</a>) {</div>
 <div class="line"><a id="l00890" name="l00890"></a><span class="lineno">  890</span>        cur = PageLink();</div>
 <div class="line"><a id="l00891" name="l00891"></a><span class="lineno">  891</span>        cur.begin = out.size();</div>
 <div class="line"><a id="l00892" name="l00892"></a><span class="lineno">  892</span>        cur.target.clear();</div>
 <div class="line"><a id="l00893" name="l00893"></a><span class="lineno">  893</span>        inTarget = inLink = <span class="keyword">true</span>;</div>
 <div class="line"><a id="l00894" name="l00894"></a><span class="lineno">  894</span>      } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (inTarget) {</div>
-<div class="line"><a id="l00895" name="l00895"></a><span class="lineno">  895</span>        <span class="keywordflow">if</span> (b == kLinkTarget) inTarget = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00895" name="l00895"></a><span class="lineno">  895</span>        <span class="keywordflow">if</span> (b == <a class="code hl_enumvalue" href="namespacetinymobi.html#ad714d9b410c68f0f159881d3a783eb33ad2943aee2fbda2db0bee6d31cb2efa35">kLinkTarget</a>) inTarget = <span class="keyword">false</span>;</div>
 <div class="line"><a id="l00896" name="l00896"></a><span class="lineno">  896</span>        <span class="keywordflow">else</span> cur.target.push_back(ch);</div>
-<div class="line"><a id="l00897" name="l00897"></a><span class="lineno">  897</span>      } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (b == kLinkEnd) {</div>
+<div class="line"><a id="l00897" name="l00897"></a><span class="lineno">  897</span>      } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (b == <a class="code hl_enumvalue" href="namespacetinymobi.html#ad714d9b410c68f0f159881d3a783eb33a8e48b25d261bc6164677f9708d2fe9c8">kLinkEnd</a>) {</div>
 <div class="line"><a id="l00898" name="l00898"></a><span class="lineno">  898</span>        <span class="keywordflow">if</span> (inLink &amp;&amp; cur.end &gt; cur.begin) links.push_back(cur);</div>
 <div class="line"><a id="l00899" name="l00899"></a><span class="lineno">  899</span>        inLink = <span class="keyword">false</span>;</div>
 <div class="line"><a id="l00900" name="l00900"></a><span class="lineno">  900</span>      } <span class="keywordflow">else</span> {</div>
@@ -978,7 +978,7 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l01000" name="l01000"></a><span class="lineno"> 1000</span>  tinymd::Switch&lt;RGB_T&gt; pageNumberSwitch_;</div>
 <div class="line"><a id="l01001" name="l01001"></a><span class="lineno"> 1001</span>  tinymd::Label&lt;RGB_T&gt; settingsHint_;</div>
 <div class="line"><a id="l01002" name="l01002"></a><span class="lineno"> 1002</span>  tinymd::Button&lt;RGB_T&gt; settingsDone_;</div>
-<div class="line"><a id="l01003" name="l01003"></a><span class="lineno"> 1003</span>  MobiCover&lt;RGB_T, Doc&gt; cover_;</div>
+<div class="line"><a id="l01003" name="l01003"></a><span class="lineno"> 1003</span>  <a class="code hl_class" href="classtinymobi_1_1MobiCover.html">MobiCover&lt;RGB_T, Doc&gt;</a> cover_;</div>
 <div class="line"><a id="l01004" name="l01004"></a><span class="lineno"> 1004</span>  <span class="keywordtype">bool</span> coverShown_ = <span class="keyword">false</span>;</div>
 <div class="line"><a id="l01005" name="l01005"></a><span class="lineno"> 1005</span>  <span class="keywordtype">bool</span> reopenDialog_ = <span class="keyword">false</span>;</div>
 <div class="line"><a id="l01006" name="l01006"></a><span class="lineno"> 1006</span>  <span class="keywordtype">bool</span> dark_ = <span class="keyword">true</span>;</div>
@@ -994,6 +994,7 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l01015" name="l01015"></a><span class="lineno"> 1015</span>}  <span class="comment">// namespace tinymobi</span></div>
 <div class="ttc" id="aMobiReaderCover_8h_html"><div class="ttname"><a href="MobiReaderCover_8h.html">MobiReaderCover.h</a></div><div class="ttdoc">The JPEG cover of a book for the reader GUI: decoded with TinyJPEG into a sprite, and shown full scre...</div></div>
 <div class="ttc" id="aTinyMobi_8h_html"><div class="ttname"><a href="TinyMobi_8h.html">TinyMobi.h</a></div></div>
+<div class="ttc" id="aclasstinymobi_1_1MobiCover_html"><div class="ttname"><a href="classtinymobi_1_1MobiCover.html">tinymobi::MobiCover</a></div><div class="ttdoc">The cover of a book. load() decodes the JPEG cover of the open document into a sprite scaled to the l...</div><div class="ttdef"><b>Definition</b> MobiReaderCover.h:23</div></div>
 <div class="ttc" id="aclasstinymobi_1_1MobiReaderApp_html"><div class="ttname"><a href="classtinymobi_1_1MobiReaderApp.html">tinymobi::MobiReaderApp</a></div><div class="ttdoc">The book reader GUI for TinyMaterialDesign: a full screen JPEG cover, then the book text one page at ...</div><div class="ttdef"><b>Definition</b> MobiReaderApp.h:67</div></div>
 <div class="ttc" id="aclasstinymobi_1_1MobiReaderApp_html_a0ca5a3e090da92a6788d7c73d7c9a592"><div class="ttname"><a href="classtinymobi_1_1MobiReaderApp.html#a0ca5a3e090da92a6788d7c73d7c9a592">tinymobi::MobiReaderApp::next</a></div><div class="ttdeci">void next()</div><div class="ttdoc">Shows the next page, if there is one.</div><div class="ttdef"><b>Definition</b> MobiReaderApp.h:204</div></div>
 <div class="ttc" id="aclasstinymobi_1_1MobiReaderApp_html_a11670ff15066eb64e7648244c0a01bcd"><div class="ttname"><a href="classtinymobi_1_1MobiReaderApp.html#a11670ff15066eb64e7648244c0a01bcd">tinymobi::MobiReaderApp::hasPrevious</a></div><div class="ttdeci">bool hasPrevious() const</div><div class="ttdoc">True if there is a page before the shown one.</div><div class="ttdef"><b>Definition</b> MobiReaderApp.h:239</div></div>
@@ -1029,6 +1030,11 @@ $(document).ready(function() { init_codefold(0); });
 <div class="ttc" id="aclasstinymobi_1_1Position_html"><div class="ttname"><a href="classtinymobi_1_1Position.html">tinymobi::Position</a></div><div class="ttdoc">Position in the book text: a section (text record or KF8 part) and an offset in it.</div><div class="ttdef"><b>Definition</b> TinyMobi.h:96</div></div>
 <div class="ttc" id="anamespacetinymobi_html"><div class="ttname"><a href="namespacetinymobi.html">tinymobi</a></div><div class="ttdef"><b>Definition</b> TinyMobi.h:43</div></div>
 <div class="ttc" id="anamespacetinymobi_html_a66430432639a8de303ef8eb59cf10a7aaa42c5716494d5fe896048b3fb603a451"><div class="ttname"><a href="namespacetinymobi.html#a66430432639a8de303ef8eb59cf10a7aaa42c5716494d5fe896048b3fb603a451">tinymobi::TextMode::PlainLinks</a></div><div class="ttdeci">@ PlainLinks</div></div>
+<div class="ttc" id="anamespacetinymobi_html_ad714d9b410c68f0f159881d3a783eb33a4a8fba039cf4aa2da8be53a3114e4fa3"><div class="ttname"><a href="namespacetinymobi.html#ad714d9b410c68f0f159881d3a783eb33a4a8fba039cf4aa2da8be53a3114e4fa3">tinymobi::kLinkBegin</a></div><div class="ttdeci">@ kLinkBegin</div><div class="ttdef"><b>Definition</b> TinyMobi.h:93</div></div>
+<div class="ttc" id="anamespacetinymobi_html_ad714d9b410c68f0f159881d3a783eb33a65c925fcaa345a6c9c6043e0c007fa4b"><div class="ttname"><a href="namespacetinymobi.html#ad714d9b410c68f0f159881d3a783eb33a65c925fcaa345a6c9c6043e0c007fa4b">tinymobi::kHeadEnd</a></div><div class="ttdeci">@ kHeadEnd</div><div class="ttdef"><b>Definition</b> TinyMobi.h:93</div></div>
+<div class="ttc" id="anamespacetinymobi_html_ad714d9b410c68f0f159881d3a783eb33a8e48b25d261bc6164677f9708d2fe9c8"><div class="ttname"><a href="namespacetinymobi.html#ad714d9b410c68f0f159881d3a783eb33a8e48b25d261bc6164677f9708d2fe9c8">tinymobi::kLinkEnd</a></div><div class="ttdeci">@ kLinkEnd</div><div class="ttdef"><b>Definition</b> TinyMobi.h:93</div></div>
+<div class="ttc" id="anamespacetinymobi_html_ad714d9b410c68f0f159881d3a783eb33ad19eeaa000d448bf0888dafe16d30502"><div class="ttname"><a href="namespacetinymobi.html#ad714d9b410c68f0f159881d3a783eb33ad19eeaa000d448bf0888dafe16d30502">tinymobi::kHeadBegin</a></div><div class="ttdeci">@ kHeadBegin</div><div class="ttdef"><b>Definition</b> TinyMobi.h:93</div></div>
+<div class="ttc" id="anamespacetinymobi_html_ad714d9b410c68f0f159881d3a783eb33ad2943aee2fbda2db0bee6d31cb2efa35"><div class="ttname"><a href="namespacetinymobi.html#ad714d9b410c68f0f159881d3a783eb33ad2943aee2fbda2db0bee6d31cb2efa35">tinymobi::kLinkTarget</a></div><div class="ttdeci">@ kLinkTarget</div><div class="ttdef"><b>Definition</b> TinyMobi.h:93</div></div>
 <div class="ttc" id="astructtinymobi_1_1Metadata_html"><div class="ttname"><a href="structtinymobi_1_1Metadata.html">tinymobi::Metadata</a></div><div class="ttdoc">Book metadata. Strings are UTF-8 and truncated to the buffer size.</div><div class="ttdef"><b>Definition</b> TinyMobi.h:172</div></div>
 <div class="ttc" id="astructtinymobi_1_1Metadata_html_a1d9005825b113f82e7a2528770a4a708"><div class="ttname"><a href="structtinymobi_1_1Metadata.html#a1d9005825b113f82e7a2528770a4a708">tinymobi::Metadata::title</a></div><div class="ttdeci">char title[128]</div><div class="ttdoc">book title (UTF-8)</div><div class="ttdef"><b>Definition</b> TinyMobi.h:173</div></div>
 <div class="ttc" id="astructtinymobi_1_1Metadata_html_a4c80619e7af3bd707d57ca815d9a8732"><div class="ttname"><a href="structtinymobi_1_1Metadata.html#a4c80619e7af3bd707d57ca815d9a8732">tinymobi::Metadata::language</a></div><div class="ttdeci">char language[16]</div><div class="ttdoc">language code, e.g. &quot;en&quot;</div><div class="ttdef"><b>Definition</b> TinyMobi.h:176</div></div>

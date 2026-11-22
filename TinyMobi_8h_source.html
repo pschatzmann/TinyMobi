@@ -108,12 +108,12 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span><span class="comment"> * flow table is not parsed; the text is assumed to start at offset 0.</span></div>
 <div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span><span class="comment"> *</span></div>
 <div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="comment"> * Usage (memory buffer):</span></div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span><span class="comment"> *   tinymobi::MemoryMobi doc(tinymobi::MemorySource(data, len));</span></div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="comment"> *   if (doc.open() == tinymobi::Error::None) { ... doc.read(buf, n) ... }</span></div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span><span class="comment"> *   MemoryMobi doc(MemorySource(data, len));</span></div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="comment"> *   if (doc.open() == Error::None) { ... doc.read(buf, n) ... }</span></div>
 <div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span><span class="comment"> *</span></div>
 <div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span><span class="comment"> * Usage (file):</span></div>
 <div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="comment"> *   File f = SD.open(&quot;/book.mobi&quot;);</span></div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span><span class="comment"> *   tinymobi::FileMobi&lt;File&gt; doc(tinymobi::StreamSource&lt;File&gt;(f));</span></div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span><span class="comment"> *   FileMobi&lt;File&gt; doc(StreamSource&lt;File&gt;(f));</span></div>
 <div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span><span class="comment"> *</span></div>
 <div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span><span class="comment"> * License: MIT</span></div>
 <div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span><span class="comment"> */</span></div>
@@ -1235,22 +1235,22 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l01163" name="l01163"></a><span class="lineno"> 1163</span>  }</div>
 <div class="line"><a id="l01164" name="l01164"></a><span class="lineno"> 1164</span> </div>
 <div class="line"><a id="l01165" name="l01165"></a><span class="lineno"> 1165</span>  <a class="code hl_enumeration" href="namespacetinymobi.html#a8de84e1f3f7e62f4c7783874dc6cf33d">Error</a> readTocEntry(uint32_t rec, <span class="keyword">const</span> IndxHeader&amp; ih, uint32_t j, <span class="keyword">const</span> TagTable&amp; tt,</div>
-<div class="line"><a id="l01166" name="l01166"></a><span class="lineno"> 1166</span>                     uint32_t ncx, <span class="keyword">const</span> IndxHeader&amp; mh, uint32_t index, TocEntry&amp; te) {</div>
+<div class="line"><a id="l01166" name="l01166"></a><span class="lineno"> 1166</span>                     uint32_t ncx, <span class="keyword">const</span> IndxHeader&amp; mh, uint32_t index, <a class="code hl_struct" href="structtinymobi_1_1TocEntry.html">TocEntry</a>&amp; te) {</div>
 <div class="line"><a id="l01167" name="l01167"></a><span class="lineno"> 1167</span>    <span class="keywordtype">char</span> label[8];</div>
 <div class="line"><a id="l01168" name="l01168"></a><span class="lineno"> 1168</span>    TagMap m;</div>
 <div class="line"><a id="l01169" name="l01169"></a><span class="lineno"> 1169</span>    <a class="code hl_enumeration" href="namespacetinymobi.html#a8de84e1f3f7e62f4c7783874dc6cf33d">Error</a> e = readIndexEntry(rec, ih, j, tt, label, <span class="keyword">sizeof</span>(label), m);</div>
 <div class="line"><a id="l01170" name="l01170"></a><span class="lineno"> 1170</span>    <span class="keywordflow">if</span> (e != <a class="code hl_enumvalue" href="namespacetinymobi.html#a8de84e1f3f7e62f4c7783874dc6cf33da6adf97f83acf6453d4a6a4b1070f3754">Error::None</a>) <span class="keywordflow">return</span> e;</div>
 <div class="line"><a id="l01171" name="l01171"></a><span class="lineno"> 1171</span> </div>
-<div class="line"><a id="l01172" name="l01172"></a><span class="lineno"> 1172</span>    te = TocEntry();</div>
-<div class="line"><a id="l01173" name="l01173"></a><span class="lineno"> 1173</span>    te.start = Position(<a class="code hl_variable" href="namespacetinymobi.html#aad4c3b54c5a404abc97c2c0f04333029">kNoRecord</a>, 0);</div>
-<div class="line"><a id="l01174" name="l01174"></a><span class="lineno"> 1174</span>    te.index = index;</div>
-<div class="line"><a id="l01175" name="l01175"></a><span class="lineno"> 1175</span>    <span class="keywordflow">if</span> (m.has[1]) te.start = textPosition(m.v[1][0]);</div>
-<div class="line"><a id="l01176" name="l01176"></a><span class="lineno"> 1176</span>    <span class="keywordflow">if</span> (m.has[2]) te.length = m.v[2][0];</div>
-<div class="line"><a id="l01177" name="l01177"></a><span class="lineno"> 1177</span>    <span class="keywordflow">if</span> (m.has[4]) te.level = <span class="keyword">static_cast&lt;</span>uint8_t<span class="keyword">&gt;</span>(m.v[4][0]);</div>
-<div class="line"><a id="l01178" name="l01178"></a><span class="lineno"> 1178</span>    <span class="keywordflow">if</span> (m.has[21]) te.parent = <span class="keyword">static_cast&lt;</span>int32_t<span class="keyword">&gt;</span>(m.v[21][0]);</div>
-<div class="line"><a id="l01179" name="l01179"></a><span class="lineno"> 1179</span>    <span class="keywordflow">if</span> (m.has[22]) te.firstChild = <span class="keyword">static_cast&lt;</span>int32_t<span class="keyword">&gt;</span>(m.v[22][0]);</div>
-<div class="line"><a id="l01180" name="l01180"></a><span class="lineno"> 1180</span>    <span class="keywordflow">if</span> (m.has[23]) te.lastChild = <span class="keyword">static_cast&lt;</span>int32_t<span class="keyword">&gt;</span>(m.v[23][0]);</div>
-<div class="line"><a id="l01181" name="l01181"></a><span class="lineno"> 1181</span>    <span class="keywordflow">if</span> (m.has[3]) ctocTitle(mh, ncx, m.v[3][0], te.title, <span class="keyword">sizeof</span>(te.title));</div>
+<div class="line"><a id="l01172" name="l01172"></a><span class="lineno"> 1172</span>    te = <a class="code hl_struct" href="structtinymobi_1_1TocEntry.html">TocEntry</a>();</div>
+<div class="line"><a id="l01173" name="l01173"></a><span class="lineno"> 1173</span>    te.<a class="code hl_variable" href="structtinymobi_1_1TocEntry.html#a7717ecd087f797661663404d9fa7633a">start</a> = <a class="code hl_class" href="classtinymobi_1_1Position.html">Position</a>(<a class="code hl_variable" href="namespacetinymobi.html#aad4c3b54c5a404abc97c2c0f04333029">kNoRecord</a>, 0);</div>
+<div class="line"><a id="l01174" name="l01174"></a><span class="lineno"> 1174</span>    te.<a class="code hl_variable" href="structtinymobi_1_1TocEntry.html#a3d7bb0960f1deda6e701138256e20347">index</a> = index;</div>
+<div class="line"><a id="l01175" name="l01175"></a><span class="lineno"> 1175</span>    <span class="keywordflow">if</span> (m.has[1]) te.<a class="code hl_variable" href="structtinymobi_1_1TocEntry.html#a7717ecd087f797661663404d9fa7633a">start</a> = textPosition(m.v[1][0]);</div>
+<div class="line"><a id="l01176" name="l01176"></a><span class="lineno"> 1176</span>    <span class="keywordflow">if</span> (m.has[2]) te.<a class="code hl_variable" href="structtinymobi_1_1TocEntry.html#ad7bf6695904ab9bbea2ae7d6ff497711">length</a> = m.v[2][0];</div>
+<div class="line"><a id="l01177" name="l01177"></a><span class="lineno"> 1177</span>    <span class="keywordflow">if</span> (m.has[4]) te.<a class="code hl_variable" href="structtinymobi_1_1TocEntry.html#a399b0e3a82d36fc6effd64c90e042f30">level</a> = <span class="keyword">static_cast&lt;</span>uint8_t<span class="keyword">&gt;</span>(m.v[4][0]);</div>
+<div class="line"><a id="l01178" name="l01178"></a><span class="lineno"> 1178</span>    <span class="keywordflow">if</span> (m.has[21]) te.<a class="code hl_variable" href="structtinymobi_1_1TocEntry.html#a770a3d857acc5df290ed996d9651fff9">parent</a> = <span class="keyword">static_cast&lt;</span>int32_t<span class="keyword">&gt;</span>(m.v[21][0]);</div>
+<div class="line"><a id="l01179" name="l01179"></a><span class="lineno"> 1179</span>    <span class="keywordflow">if</span> (m.has[22]) te.<a class="code hl_variable" href="structtinymobi_1_1TocEntry.html#aace2cb517a3514803791347f581ec8ae">firstChild</a> = <span class="keyword">static_cast&lt;</span>int32_t<span class="keyword">&gt;</span>(m.v[22][0]);</div>
+<div class="line"><a id="l01180" name="l01180"></a><span class="lineno"> 1180</span>    <span class="keywordflow">if</span> (m.has[23]) te.<a class="code hl_variable" href="structtinymobi_1_1TocEntry.html#a8218540d0dd90d13598306ba21271012">lastChild</a> = <span class="keyword">static_cast&lt;</span>int32_t<span class="keyword">&gt;</span>(m.v[23][0]);</div>
+<div class="line"><a id="l01181" name="l01181"></a><span class="lineno"> 1181</span>    <span class="keywordflow">if</span> (m.has[3]) ctocTitle(mh, ncx, m.v[3][0], te.<a class="code hl_variable" href="structtinymobi_1_1TocEntry.html#a82c1ebe34f61b63fab6333897eef2a4d">title</a>, <span class="keyword">sizeof</span>(te.<a class="code hl_variable" href="structtinymobi_1_1TocEntry.html#a82c1ebe34f61b63fab6333897eef2a4d">title</a>));</div>
 <div class="line"><a id="l01182" name="l01182"></a><span class="lineno"> 1182</span>    <span class="keywordflow">return</span> <a class="code hl_enumvalue" href="namespacetinymobi.html#a8de84e1f3f7e62f4c7783874dc6cf33da6adf97f83acf6453d4a6a4b1070f3754">Error::None</a>;</div>
 <div class="line"><a id="l01183" name="l01183"></a><span class="lineno"> 1183</span>  }</div>
 <div class="line"><a id="l01184" name="l01184"></a><span class="lineno"> 1184</span> </div>
@@ -1491,7 +1491,7 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l01430" name="l01430"></a><span class="lineno"> 1430</span>    _kf8Frag = absIndex(0xF8);</div>
 <div class="line"><a id="l01431" name="l01431"></a><span class="lineno"> 1431</span>    _kf8Skel = absIndex(0xFC);</div>
 <div class="line"><a id="l01432" name="l01432"></a><span class="lineno"> 1432</span> </div>
-<div class="line"><a id="l01433" name="l01433"></a><span class="lineno"> 1433</span>    _kf8View = TextView();</div>
+<div class="line"><a id="l01433" name="l01433"></a><span class="lineno"> 1433</span>    _kf8View = <a class="code hl_struct" href="structtinymobi_1_1TextView.html">TextView</a>();</div>
 <div class="line"><a id="l01434" name="l01434"></a><span class="lineno"> 1434</span>    _kf8View.<a class="code hl_variable" href="structtinymobi_1_1TextView.html#a999408de0bc4814e7ae139d4a76746b7">firstRec</a> = hdr + 1;</div>
 <div class="line"><a id="l01435" name="l01435"></a><span class="lineno"> 1435</span>    uint32_t avail = _numRecords - (hdr + 1);</div>
 <div class="line"><a id="l01436" name="l01436"></a><span class="lineno"> 1436</span>    _kf8View.<a class="code hl_variable" href="structtinymobi_1_1TextView.html#a9669f2e3ad919c78d479a4ae72f6c7f1">chunks</a> = recCount &lt; avail ? recCount : avail;</div>
@@ -1699,7 +1699,7 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l01650" name="l01650"></a><span class="lineno"> 1650</span>    <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
 <div class="line"><a id="l01651" name="l01651"></a><span class="lineno"> 1651</span>  }</div>
 <div class="line"><a id="l01652" name="l01652"></a><span class="lineno"> 1652</span> </div>
-<div class="line"><a id="l01656" name="l01656"></a><span class="lineno"> 1656</span>  <span class="keywordtype">bool</span> resolveKf8Link(<span class="keyword">const</span> <span class="keywordtype">char</span>* t, Position&amp; out) {</div>
+<div class="line"><a id="l01656" name="l01656"></a><span class="lineno"> 1656</span>  <span class="keywordtype">bool</span> resolveKf8Link(<span class="keyword">const</span> <span class="keywordtype">char</span>* t, <a class="code hl_class" href="classtinymobi_1_1Position.html">Position</a>&amp; out) {</div>
 <div class="line"><a id="l01657" name="l01657"></a><span class="lineno"> 1657</span>    <span class="keyword">static</span> <span class="keyword">const</span> <span class="keywordtype">char</span> kFid[] = <span class="stringliteral">&quot;kindle:pos:fid:&quot;</span>;</div>
 <div class="line"><a id="l01658" name="l01658"></a><span class="lineno"> 1658</span>    <span class="keyword">static</span> <span class="keyword">const</span> <span class="keywordtype">char</span> kOff[] = <span class="stringliteral">&quot;:off:&quot;</span>;</div>
 <div class="line"><a id="l01659" name="l01659"></a><span class="lineno"> 1659</span>    <span class="keyword">const</span> <span class="keywordtype">size_t</span> fl = <span class="keyword">sizeof</span>(kFid) - 1, ol = <span class="keyword">sizeof</span>(kOff) - 1;</div>
@@ -1733,18 +1733,18 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l01687" name="l01687"></a><span class="lineno"> 1687</span>      <span class="keywordflow">if</span> (!skeletonStart(part, skelStart) || insert &lt; skelStart) <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
 <div class="line"><a id="l01688" name="l01688"></a><span class="lineno"> 1688</span>      <span class="keyword">const</span> uint64_t pos = <span class="keyword">static_cast&lt;</span>uint64_t<span class="keyword">&gt;</span>(insert - skelStart) + off;</div>
 <div class="line"><a id="l01689" name="l01689"></a><span class="lineno"> 1689</span>      <span class="keywordflow">if</span> (pos &gt; 0xFFFFFFFFull) <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
-<div class="line"><a id="l01690" name="l01690"></a><span class="lineno"> 1690</span>      out = Position(part, <span class="keyword">static_cast&lt;</span>uint32_t<span class="keyword">&gt;</span>(pos));</div>
+<div class="line"><a id="l01690" name="l01690"></a><span class="lineno"> 1690</span>      out = <a class="code hl_class" href="classtinymobi_1_1Position.html">Position</a>(part, <span class="keyword">static_cast&lt;</span>uint32_t<span class="keyword">&gt;</span>(pos));</div>
 <div class="line"><a id="l01691" name="l01691"></a><span class="lineno"> 1691</span>      <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
 <div class="line"><a id="l01692" name="l01692"></a><span class="lineno"> 1692</span>    }</div>
 <div class="line"><a id="l01693" name="l01693"></a><span class="lineno"> 1693</span>    <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
 <div class="line"><a id="l01694" name="l01694"></a><span class="lineno"> 1694</span>  }</div>
 <div class="line"><a id="l01695" name="l01695"></a><span class="lineno"> 1695</span> </div>
-<div class="line"><a id="l01696" name="l01696"></a><span class="lineno"> 1696</span>  Position textPosition(uint32_t textOffset) {</div>
-<div class="line"><a id="l01697" name="l01697"></a><span class="lineno"> 1697</span>    <span class="keywordflow">if</span> (!_open || _useKf8 || _mobi6View.<a class="code hl_variable" href="structtinymobi_1_1TextView.html#af59f2a03c7bcd430a0b2f301a5229427">recordSize</a> == 0) <span class="keywordflow">return</span> Position(<a class="code hl_variable" href="namespacetinymobi.html#aad4c3b54c5a404abc97c2c0f04333029">kNoRecord</a>, 0);</div>
+<div class="line"><a id="l01696" name="l01696"></a><span class="lineno"> 1696</span>  <a class="code hl_class" href="classtinymobi_1_1Position.html">Position</a> textPosition(uint32_t textOffset) {</div>
+<div class="line"><a id="l01697" name="l01697"></a><span class="lineno"> 1697</span>    <span class="keywordflow">if</span> (!_open || _useKf8 || _mobi6View.<a class="code hl_variable" href="structtinymobi_1_1TextView.html#af59f2a03c7bcd430a0b2f301a5229427">recordSize</a> == 0) <span class="keywordflow">return</span> <a class="code hl_class" href="classtinymobi_1_1Position.html">Position</a>(<a class="code hl_variable" href="namespacetinymobi.html#aad4c3b54c5a404abc97c2c0f04333029">kNoRecord</a>, 0);</div>
 <div class="line"><a id="l01698" name="l01698"></a><span class="lineno"> 1698</span>    <span class="keywordflow">if</span> (_mobi6View.<a class="code hl_variable" href="structtinymobi_1_1TextView.html#af2e7327099f0e4fbbb4c359b84c1ab57">compression</a> != kHuffCompression) {</div>
 <div class="line"><a id="l01699" name="l01699"></a><span class="lineno"> 1699</span>      uint32_t sec = textOffset / _mobi6View.<a class="code hl_variable" href="structtinymobi_1_1TextView.html#af59f2a03c7bcd430a0b2f301a5229427">recordSize</a>;</div>
-<div class="line"><a id="l01700" name="l01700"></a><span class="lineno"> 1700</span>      <span class="keywordflow">if</span> (sec &gt;= _mobi6View.<a class="code hl_variable" href="structtinymobi_1_1TextView.html#a9669f2e3ad919c78d479a4ae72f6c7f1">chunks</a>) <span class="keywordflow">return</span> Position(<a class="code hl_variable" href="namespacetinymobi.html#aad4c3b54c5a404abc97c2c0f04333029">kNoRecord</a>, 0);</div>
-<div class="line"><a id="l01701" name="l01701"></a><span class="lineno"> 1701</span>      <span class="keywordflow">return</span> Position(sec, textOffset - sec * _mobi6View.<a class="code hl_variable" href="structtinymobi_1_1TextView.html#af59f2a03c7bcd430a0b2f301a5229427">recordSize</a>);</div>
+<div class="line"><a id="l01700" name="l01700"></a><span class="lineno"> 1700</span>      <span class="keywordflow">if</span> (sec &gt;= _mobi6View.<a class="code hl_variable" href="structtinymobi_1_1TextView.html#a9669f2e3ad919c78d479a4ae72f6c7f1">chunks</a>) <span class="keywordflow">return</span> <a class="code hl_class" href="classtinymobi_1_1Position.html">Position</a>(<a class="code hl_variable" href="namespacetinymobi.html#aad4c3b54c5a404abc97c2c0f04333029">kNoRecord</a>, 0);</div>
+<div class="line"><a id="l01701" name="l01701"></a><span class="lineno"> 1701</span>      <span class="keywordflow">return</span> <a class="code hl_class" href="classtinymobi_1_1Position.html">Position</a>(sec, textOffset - sec * _mobi6View.<a class="code hl_variable" href="structtinymobi_1_1TextView.html#af59f2a03c7bcd430a0b2f301a5229427">recordSize</a>);</div>
 <div class="line"><a id="l01702" name="l01702"></a><span class="lineno"> 1702</span>    }</div>
 <div class="line"><a id="l01703" name="l01703"></a><span class="lineno"> 1703</span>    <span class="comment">// HUFF books: record sizes vary, so the walk adds up the decoded lengths.</span></div>
 <div class="line"><a id="l01704" name="l01704"></a><span class="lineno"> 1704</span>    <span class="comment">// The walk remembers where it stopped, so sorted lookups stay linear.</span></div>
@@ -1754,12 +1754,12 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l01708" name="l01708"></a><span class="lineno"> 1708</span>    }</div>
 <div class="line"><a id="l01709" name="l01709"></a><span class="lineno"> 1709</span>    uint32_t savedSection = _curChunk, savedPos = _recPos;</div>
 <div class="line"><a id="l01710" name="l01710"></a><span class="lineno"> 1710</span>    <span class="keywordtype">bool</span> hadChunk = _recLen &gt; 0;</div>
-<div class="line"><a id="l01711" name="l01711"></a><span class="lineno"> 1711</span>    Position result(<a class="code hl_variable" href="namespacetinymobi.html#aad4c3b54c5a404abc97c2c0f04333029">kNoRecord</a>, 0);</div>
+<div class="line"><a id="l01711" name="l01711"></a><span class="lineno"> 1711</span>    <a class="code hl_class" href="classtinymobi_1_1Position.html">Position</a> result(<a class="code hl_variable" href="namespacetinymobi.html#aad4c3b54c5a404abc97c2c0f04333029">kNoRecord</a>, 0);</div>
 <div class="line"><a id="l01712" name="l01712"></a><span class="lineno"> 1712</span>    <span class="keywordflow">while</span> (_walkSection &lt; _mobi6View.<a class="code hl_variable" href="structtinymobi_1_1TextView.html#a9669f2e3ad919c78d479a4ae72f6c7f1">chunks</a>) {</div>
 <div class="line"><a id="l01713" name="l01713"></a><span class="lineno"> 1713</span>      <span class="keywordtype">size_t</span> n = 0;</div>
 <div class="line"><a id="l01714" name="l01714"></a><span class="lineno"> 1714</span>      <span class="keywordflow">if</span> (decodeChunkIn(_mobi6View, _walkSection, _rec, RecordBufferSize, n) != <a class="code hl_enumvalue" href="namespacetinymobi.html#a8de84e1f3f7e62f4c7783874dc6cf33da6adf97f83acf6453d4a6a4b1070f3754">Error::None</a>) <span class="keywordflow">break</span>;</div>
 <div class="line"><a id="l01715" name="l01715"></a><span class="lineno"> 1715</span>      <span class="keywordflow">if</span> (textOffset &lt; _walkStart + n) {</div>
-<div class="line"><a id="l01716" name="l01716"></a><span class="lineno"> 1716</span>        result = Position(_walkSection, textOffset - _walkStart);</div>
+<div class="line"><a id="l01716" name="l01716"></a><span class="lineno"> 1716</span>        result = <a class="code hl_class" href="classtinymobi_1_1Position.html">Position</a>(_walkSection, textOffset - _walkStart);</div>
 <div class="line"><a id="l01717" name="l01717"></a><span class="lineno"> 1717</span>        <span class="keywordflow">break</span>;</div>
 <div class="line"><a id="l01718" name="l01718"></a><span class="lineno"> 1718</span>      }</div>
 <div class="line"><a id="l01719" name="l01719"></a><span class="lineno"> 1719</span>      _walkStart += <span class="keyword">static_cast&lt;</span>uint32_t<span class="keyword">&gt;</span>(n);</div>
@@ -1850,11 +1850,11 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l01805" name="l01805"></a><span class="lineno"> 1805</span> </div>
 <div class="line"><a id="l01806" name="l01806"></a><span class="lineno"> 1806</span>  <span class="comment">// -- text decoding -------------------------------------------------------</span></div>
 <div class="line"><a id="l01807" name="l01807"></a><span class="lineno"> 1807</span> </div>
-<div class="line"><a id="l01809" name="l01809"></a><span class="lineno"> 1809</span>  <a class="code hl_enumeration" href="namespacetinymobi.html#a8de84e1f3f7e62f4c7783874dc6cf33d">Error</a> decodeChunkIn(<span class="keyword">const</span> TextView&amp; v, uint32_t chunk, uint8_t* out, <span class="keywordtype">size_t</span> cap,</div>
+<div class="line"><a id="l01809" name="l01809"></a><span class="lineno"> 1809</span>  <a class="code hl_enumeration" href="namespacetinymobi.html#a8de84e1f3f7e62f4c7783874dc6cf33d">Error</a> decodeChunkIn(<span class="keyword">const</span> <a class="code hl_struct" href="structtinymobi_1_1TextView.html">TextView</a>&amp; v, uint32_t chunk, uint8_t* out, <span class="keywordtype">size_t</span> cap,</div>
 <div class="line"><a id="l01810" name="l01810"></a><span class="lineno"> 1810</span>                      <span class="keywordtype">size_t</span>&amp; outLen) {</div>
 <div class="line"><a id="l01811" name="l01811"></a><span class="lineno"> 1811</span>    outLen = 0;</div>
-<div class="line"><a id="l01812" name="l01812"></a><span class="lineno"> 1812</span>    uint32_t start = recordOffset(v.firstRec + chunk);</div>
-<div class="line"><a id="l01813" name="l01813"></a><span class="lineno"> 1813</span>    uint32_t end = recordEnd(v.firstRec + chunk);</div>
+<div class="line"><a id="l01812" name="l01812"></a><span class="lineno"> 1812</span>    uint32_t start = recordOffset(v.<a class="code hl_variable" href="structtinymobi_1_1TextView.html#a999408de0bc4814e7ae139d4a76746b7">firstRec</a> + chunk);</div>
+<div class="line"><a id="l01813" name="l01813"></a><span class="lineno"> 1813</span>    uint32_t end = recordEnd(v.<a class="code hl_variable" href="structtinymobi_1_1TextView.html#a999408de0bc4814e7ae139d4a76746b7">firstRec</a> + chunk);</div>
 <div class="line"><a id="l01814" name="l01814"></a><span class="lineno"> 1814</span>    <span class="keywordflow">if</span> (start == <a class="code hl_variable" href="namespacetinymobi.html#aad4c3b54c5a404abc97c2c0f04333029">kNoRecord</a> || end == <a class="code hl_variable" href="namespacetinymobi.html#aad4c3b54c5a404abc97c2c0f04333029">kNoRecord</a> || end &gt; _total || end &lt; start) {</div>
 <div class="line"><a id="l01815" name="l01815"></a><span class="lineno"> 1815</span>      <span class="keywordflow">return</span> fail(<a class="code hl_enumvalue" href="namespacetinymobi.html#a8de84e1f3f7e62f4c7783874dc6cf33da4aca447723d40450b9fd309617e3d94b">Error::CorruptData</a>);</div>
 <div class="line"><a id="l01816" name="l01816"></a><span class="lineno"> 1816</span>    }</div>
@@ -1862,19 +1862,19 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l01818" name="l01818"></a><span class="lineno"> 1818</span>    <span class="keywordflow">if</span> (len == 0) <span class="keywordflow">return</span> <a class="code hl_enumvalue" href="namespacetinymobi.html#a8de84e1f3f7e62f4c7783874dc6cf33da6adf97f83acf6453d4a6a4b1070f3754">Error::None</a>;</div>
 <div class="line"><a id="l01819" name="l01819"></a><span class="lineno"> 1819</span> </div>
 <div class="line"><a id="l01820" name="l01820"></a><span class="lineno"> 1820</span>    uint32_t trail = 0;</div>
-<div class="line"><a id="l01821" name="l01821"></a><span class="lineno"> 1821</span>    <span class="keywordflow">if</span> (v.extraFlags != 0 &amp;&amp; !trailingSizeAt(start, len, v.extraFlags, trail)) {</div>
+<div class="line"><a id="l01821" name="l01821"></a><span class="lineno"> 1821</span>    <span class="keywordflow">if</span> (v.<a class="code hl_variable" href="structtinymobi_1_1TextView.html#ab34591cb0a87d62e519c99057f6bcbd9">extraFlags</a> != 0 &amp;&amp; !trailingSizeAt(start, len, v.<a class="code hl_variable" href="structtinymobi_1_1TextView.html#ab34591cb0a87d62e519c99057f6bcbd9">extraFlags</a>, trail)) {</div>
 <div class="line"><a id="l01822" name="l01822"></a><span class="lineno"> 1822</span>      <span class="keywordflow">return</span> fail(<a class="code hl_enumvalue" href="namespacetinymobi.html#a8de84e1f3f7e62f4c7783874dc6cf33da4aca447723d40450b9fd309617e3d94b">Error::CorruptData</a>);</div>
 <div class="line"><a id="l01823" name="l01823"></a><span class="lineno"> 1823</span>    }</div>
 <div class="line"><a id="l01824" name="l01824"></a><span class="lineno"> 1824</span>    <span class="keywordflow">if</span> (trail &gt; len) <span class="keywordflow">return</span> fail(<a class="code hl_enumvalue" href="namespacetinymobi.html#a8de84e1f3f7e62f4c7783874dc6cf33da4aca447723d40450b9fd309617e3d94b">Error::CorruptData</a>);</div>
 <div class="line"><a id="l01825" name="l01825"></a><span class="lineno"> 1825</span>    uint32_t dataLen = len - trail;</div>
 <div class="line"><a id="l01826" name="l01826"></a><span class="lineno"> 1826</span> </div>
-<div class="line"><a id="l01827" name="l01827"></a><span class="lineno"> 1827</span>    <span class="keywordflow">if</span> (v.compression == 1) {</div>
+<div class="line"><a id="l01827" name="l01827"></a><span class="lineno"> 1827</span>    <span class="keywordflow">if</span> (v.<a class="code hl_variable" href="structtinymobi_1_1TextView.html#af2e7327099f0e4fbbb4c359b84c1ab57">compression</a> == 1) {</div>
 <div class="line"><a id="l01828" name="l01828"></a><span class="lineno"> 1828</span>      <span class="keywordflow">if</span> (dataLen &gt; cap) <span class="keywordflow">return</span> fail(<a class="code hl_enumvalue" href="namespacetinymobi.html#a8de84e1f3f7e62f4c7783874dc6cf33dab801c4d44abd4738b7f69c4e390ed61d">Error::BufferTooSmall</a>);</div>
 <div class="line"><a id="l01829" name="l01829"></a><span class="lineno"> 1829</span>      <span class="keywordflow">if</span> (dataLen &gt; 0 &amp;&amp; _src.read(start, out, dataLen) != dataLen) <span class="keywordflow">return</span> fail(<a class="code hl_enumvalue" href="namespacetinymobi.html#a8de84e1f3f7e62f4c7783874dc6cf33da42a02b42ec22cfcbd78aaf7a66a5ee09">Error::Io</a>);</div>
 <div class="line"><a id="l01830" name="l01830"></a><span class="lineno"> 1830</span>      outLen = dataLen;</div>
 <div class="line"><a id="l01831" name="l01831"></a><span class="lineno"> 1831</span>      <span class="keywordflow">return</span> <a class="code hl_enumvalue" href="namespacetinymobi.html#a8de84e1f3f7e62f4c7783874dc6cf33da6adf97f83acf6453d4a6a4b1070f3754">Error::None</a>;</div>
 <div class="line"><a id="l01832" name="l01832"></a><span class="lineno"> 1832</span>    }</div>
-<div class="line"><a id="l01833" name="l01833"></a><span class="lineno"> 1833</span>    <span class="keywordflow">if</span> (v.compression == kHuffCompression) {</div>
+<div class="line"><a id="l01833" name="l01833"></a><span class="lineno"> 1833</span>    <span class="keywordflow">if</span> (v.<a class="code hl_variable" href="structtinymobi_1_1TextView.html#af2e7327099f0e4fbbb4c359b84c1ab57">compression</a> == kHuffCompression) {</div>
 <div class="line"><a id="l01834" name="l01834"></a><span class="lineno"> 1834</span>      <span class="keywordtype">size_t</span> o = 0;</div>
 <div class="line"><a id="l01835" name="l01835"></a><span class="lineno"> 1835</span>      <a class="code hl_enumeration" href="namespacetinymobi.html#a8de84e1f3f7e62f4c7783874dc6cf33d">Error</a> e = huffUnpack(start, dataLen, out, cap, o, 0);</div>
 <div class="line"><a id="l01836" name="l01836"></a><span class="lineno"> 1836</span>      outLen = o;</div>
@@ -2251,8 +2251,8 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l02225" name="l02225"></a><span class="lineno"> 2225</span>  uint32_t _cdicBits = 0;      <span class="comment">// phrases per CDIC record = 2^bits</span></div>
 <div class="line"><a id="l02226" name="l02226"></a><span class="lineno"> 2226</span> </div>
 <div class="line"><a id="l02227" name="l02227"></a><span class="lineno"> 2227</span>  <span class="comment">// text views: MOBI6 (set in open) and KF8 (set by ensureKf8)</span></div>
-<div class="line"><a id="l02228" name="l02228"></a><span class="lineno"> 2228</span>  TextView _mobi6View;</div>
-<div class="line"><a id="l02229" name="l02229"></a><span class="lineno"> 2229</span>  TextView _kf8View;</div>
+<div class="line"><a id="l02228" name="l02228"></a><span class="lineno"> 2228</span>  <a class="code hl_struct" href="structtinymobi_1_1TextView.html">TextView</a> _mobi6View;</div>
+<div class="line"><a id="l02229" name="l02229"></a><span class="lineno"> 2229</span>  <a class="code hl_struct" href="structtinymobi_1_1TextView.html">TextView</a> _kf8View;</div>
 <div class="line"><a id="l02230" name="l02230"></a><span class="lineno"> 2230</span>  <span class="keywordtype">bool</span> _kf8Loaded = <span class="keyword">false</span>;</div>
 <div class="line"><a id="l02231" name="l02231"></a><span class="lineno"> 2231</span>  uint32_t _kf8Skel = <a class="code hl_variable" href="namespacetinymobi.html#aad4c3b54c5a404abc97c2c0f04333029">kNoRecord</a>;  <span class="comment">// skeleton index record</span></div>
 <div class="line"><a id="l02232" name="l02232"></a><span class="lineno"> 2232</span>  uint32_t _kf8Frag = <a class="code hl_variable" href="namespacetinymobi.html#aad4c3b54c5a404abc97c2c0f04333029">kNoRecord</a>;  <span class="comment">// fragment index record</span></div>
@@ -2271,8 +2271,8 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l02245" name="l02245"></a><span class="lineno"> 2245</span>  uint32_t _rawChunk = <a class="code hl_variable" href="namespacetinymobi.html#aad4c3b54c5a404abc97c2c0f04333029">kNoRecord</a>;</div>
 <div class="line"><a id="l02246" name="l02246"></a><span class="lineno"> 2246</span>  uint32_t _rawLen = 0;</div>
 <div class="line"><a id="l02247" name="l02247"></a><span class="lineno"> 2247</span> </div>
-<div class="line"><a id="l02248" name="l02248"></a><span class="lineno"> 2248</span>  Info _info;</div>
-<div class="line"><a id="l02249" name="l02249"></a><span class="lineno"> 2249</span>  Metadata _meta;</div>
+<div class="line"><a id="l02248" name="l02248"></a><span class="lineno"> 2248</span>  <a class="code hl_struct" href="structtinymobi_1_1Info.html">Info</a> _info;</div>
+<div class="line"><a id="l02249" name="l02249"></a><span class="lineno"> 2249</span>  <a class="code hl_struct" href="structtinymobi_1_1Metadata.html">Metadata</a> _meta;</div>
 <div class="line"><a id="l02250" name="l02250"></a><span class="lineno"> 2250</span> </div>
 <div class="line"><a id="l02251" name="l02251"></a><span class="lineno"> 2251</span>  uint32_t _total = 0;</div>
 <div class="line"><a id="l02252" name="l02252"></a><span class="lineno"> 2252</span>  uint32_t _numRecords = 0;</div>
@@ -2315,6 +2315,13 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l02290" name="l02290"></a><span class="lineno"> 2290</span> </div>
 <div class="line"><a id="l02291" name="l02291"></a><span class="lineno"> 2291</span>}  <span class="comment">// namespace tinymobi</span></div>
 </div>
+<div class="line"><a id="l02292" name="l02292"></a><span class="lineno"> 2292</span> </div>
+<div class="line"><a id="l02293" name="l02293"></a><span class="lineno"> 2293</span><span class="comment">// Makes the tinymobi namespace visible, so the classes can be used without the</span></div>
+<div class="line"><a id="l02294" name="l02294"></a><span class="lineno"> 2294</span><span class="comment">// prefix (MemoryMobi, FileMobi, Error, ...). Define TINYMOBI_NO_USING_NAMESPACE</span></div>
+<div class="line"><a id="l02295" name="l02295"></a><span class="lineno"> 2295</span><span class="comment">// before including this header to avoid it (then write tinymobi::MemoryMobi).</span></div>
+<div class="line"><a id="l02296" name="l02296"></a><span class="lineno"> 2296</span><span class="preprocessor">#ifndef TINYMOBI_NO_USING_NAMESPACE</span></div>
+<div class="line"><a id="l02297" name="l02297"></a><span class="lineno"> 2297</span><span class="keyword">using namespace </span><a class="code hl_namespace" href="namespacetinymobi.html">tinymobi</a>;</div>
+<div class="line"><a id="l02298" name="l02298"></a><span class="lineno"> 2298</span><span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aclasstinymobi_1_1MemorySource_html"><div class="ttname"><a href="classtinymobi_1_1MemorySource.html">tinymobi::MemorySource</a></div><div class="ttdoc">Source backed by a memory buffer that stays owned by the caller.</div><div class="ttdef"><b>Definition</b> TinyMobi.h:313</div></div>
 <div class="ttc" id="aclasstinymobi_1_1MemorySource_html_a52c7d3cdbd43cf32323a886053b5c65d"><div class="ttname"><a href="classtinymobi_1_1MemorySource.html#a52c7d3cdbd43cf32323a886053b5c65d">tinymobi::MemorySource::size</a></div><div class="ttdeci">uint32_t size() const</div><div class="ttdoc">Size of the buffer in bytes.</div><div class="ttdef"><b>Definition</b> TinyMobi.h:319</div></div>
 <div class="ttc" id="aclasstinymobi_1_1MemorySource_html_a7436d43f8c4a2c090b4cd2405effa9fb"><div class="ttname"><a href="classtinymobi_1_1MemorySource.html#a7436d43f8c4a2c090b4cd2405effa9fb">tinymobi::MemorySource::read</a></div><div class="ttdeci">size_t read(uint32_t pos, void *buf, size_t n)</div><div class="ttdoc">Copies up to n bytes starting at pos. Returns the number of bytes copied.</div><div class="ttdef"><b>Definition</b> TinyMobi.h:322</div></div>

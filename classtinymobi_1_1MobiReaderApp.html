@@ -201,8 +201,8 @@ class tinymobi::MobiReaderApp&lt; RGB_T, Doc &gt;</div><p>The book reader GUI fo
 <li>Settings: dark mode (on by default) and navigation buttons (off by default).</li>
 </ul>
 <p>The page text is read from the document with read() in plain text mode and cut so that it fits the text area. Each page start is remembered, so <a class="el" href="classtinymobi_1_1MobiReaderApp.html#ae6ea45ecd8f9724c887b83c96b0e1dcf" title="Shows the previous page, if there is one.">previous()</a> works after <a class="el" href="classtinymobi_1_1MobiReaderApp.html#a0ca5a3e090da92a6788d7c73d7c9a592" title="Shows the next page, if there is one.">next()</a>. <a class="el" href="classtinymobi_1_1MobiReaderApp.html#ad0d16907a5edad154a081566ae955d2d" title="Starts a new page sequence at position p (e.g. a table of contents entry).">goTo()</a> starts a new page sequence, e.g. at a table of contents entry.</p>
-<p>Usage: </p><div class="fragment"><div class="line"><a class="code hl_class" href="classtinymobi_1_1MobiDocument.html">tinymobi::FileMobi&lt;File&gt;</a> doc{<a class="code hl_class" href="classtinymobi_1_1StreamSource.html">tinymobi::StreamSource&lt;File&gt;</a>(file)};</div>
-<div class="line"><a class="code hl_class" href="classtinymobi_1_1MobiReaderApp.html">tinymobi::MobiReaderApp&lt;RGB565, tinymobi::FileMobi&lt;File&gt;</a>&gt; gui(DefaultBoard, doc);</div>
+<p>Usage: </p><div class="fragment"><div class="line"><a class="code hl_class" href="classtinymobi_1_1MobiDocument.html">FileMobi&lt;File&gt;</a> doc{<a class="code hl_class" href="classtinymobi_1_1StreamSource.html">StreamSource&lt;File&gt;</a>(file)};</div>
+<div class="line"><a class="code hl_class" href="classtinymobi_1_1MobiReaderApp.html">MobiReaderApp&lt;RGB565, FileMobi&lt;File&gt;</a>&gt; gui(DefaultBoard, doc);</div>
 <div class="line"> </div>
 <div class="line"><span class="keywordtype">void</span> setup() {</div>
 <div class="line">  doc.open();   <span class="comment">// the document must be open</span></div>
@@ -226,7 +226,7 @@ template&lt;typename RGB_T  = TINYMD_DEFAULT_RGB_T, typename Doc  = MemoryMobi&g
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classtinymobi_1_1MobiReaderApp.html">tinymobi::MobiReaderApp</a>&lt; RGB_T, Doc &gt;::MobiReaderApp </td>
+          <td class="memname"><a class="el" href="classtinymobi_1_1MobiReaderApp.html">tinymobi::MobiReaderApp</a>&lt; RGB_T, Doc &gt;<a class="el" href="classtinymobi_1_1MobiReaderApp.html">::MobiReaderApp</a> </td>
           <td>(</td>
           <td class="paramtype">tinygpu::LCDBoard &amp;&#160;</td>
           <td class="paramname"><em>board</em>, </td>
