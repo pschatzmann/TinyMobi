@@ -15,25 +15,25 @@ static const char* kPath = TINYMOBI_BOOK;
 static const char* kCoverPath = TINYMOBI_COVER;
 static const int kSdCs = SS;  // change for your board
 
-static const char* extensionFor(tinymobi::ImageType t) {
+static const char* extensionFor(ImageType t) {
   switch (t) {
-    case tinymobi::ImageType::Jpeg: return ".jpg";
-    case tinymobi::ImageType::Png: return ".png";
-    case tinymobi::ImageType::Gif: return ".gif";
-    case tinymobi::ImageType::Bmp: return ".bmp";
+    case ImageType::Jpeg: return ".jpg";
+    case ImageType::Png: return ".png";
+    case ImageType::Gif: return ".gif";
+    case ImageType::Bmp: return ".bmp";
     default: return nullptr;
   }
 }
 
 // Reads the cover record and writes it to the SD card.
-static bool saveCover(tinymobi::FileMobi<File>& doc) {
+static bool saveCover(FileMobi<File>& doc) {
   uint32_t cover = doc.info().coverRecord;
-  if (cover == tinymobi::kNoRecord) {
+  if (cover == kNoRecord) {
     Serial.println("book has no cover");
     return false;
   }
   uint32_t len = 0;
-  if (doc.recordLength(cover, len) != tinymobi::Error::None || len == 0) {
+  if (doc.recordLength(cover, len) != Error::None || len == 0) {
     Serial.println("cover record not readable");
     return false;
   }
@@ -47,11 +47,11 @@ static bool saveCover(tinymobi::FileMobi<File>& doc) {
     return false;
   }
   size_t n = 0;
-  tinymobi::Error e = doc.readRecord(cover, data, len, n);
-  tinymobi::ImageType type = tinymobi::imageType(data, n);
+  Error e = doc.readRecord(cover, data, len, n);
+  ImageType type = imageType(data, n);
   const char* ext = extensionFor(type);
   bool ok = false;
-  if (e == tinymobi::Error::None && ext != nullptr) {
+  if (e == Error::None && ext != nullptr) {
     String path = String(kCoverPath) + ext;
     File out = SD.open(path.c_str(), FILE_WRITE);
     if (out) {
@@ -68,7 +68,7 @@ static bool saveCover(tinymobi::FileMobi<File>& doc) {
     }
   } else {
     Serial.print("cover is not a known image: ");
-    Serial.println(tinymobi::errorName(e));
+    Serial.println(errorName(e));
   }
   delete[] data;
   return ok;
@@ -89,15 +89,15 @@ void setup() {
   }
 
   // the file stays open while the document is used
-  tinymobi::FileMobi<File> doc(tinymobi::StreamSource<File>(file), tinymobi::TextMode::Plain);
-  tinymobi::Error e = doc.open();
-  if (e != tinymobi::Error::None) {
+  FileMobi<File> doc(StreamSource<File>(file), TextMode::Plain);
+  Error e = doc.open();
+  if (e != Error::None) {
     Serial.print("open failed: ");
-    Serial.println(tinymobi::errorName(e));
+    Serial.println(errorName(e));
     return;
   }
 
-  const tinymobi::Metadata& m = doc.metadata();
+  const Metadata& m = doc.metadata();
   Serial.print("Title : ");
   Serial.println(m.title);
   Serial.print("Author: ");
@@ -112,7 +112,7 @@ void setup() {
   Serial.println();
 
   // remember where we are, read on, then come back (bookmark / page turn)
-  tinymobi::Position bookmark = doc.position();
+  Position bookmark = doc.position();
   doc.read(buf, sizeof(buf));
   doc.seek(bookmark);
   Serial.print("bookmark at section ");

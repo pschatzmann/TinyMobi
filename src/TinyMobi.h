@@ -24,12 +24,12 @@
  * flow table is not parsed; the text is assumed to start at offset 0.
  *
  * Usage (memory buffer):
- *   tinymobi::MemoryMobi doc(tinymobi::MemorySource(data, len));
- *   if (doc.open() == tinymobi::Error::None) { ... doc.read(buf, n) ... }
+ *   MemoryMobi doc(MemorySource(data, len));
+ *   if (doc.open() == Error::None) { ... doc.read(buf, n) ... }
  *
  * Usage (file):
  *   File f = SD.open("/book.mobi");
- *   tinymobi::FileMobi<File> doc(tinymobi::StreamSource<File>(f));
+ *   FileMobi<File> doc(StreamSource<File>(f));
  *
  * License: MIT
  */
@@ -2289,3 +2289,10 @@ template <typename File>
 using FileMobi = MobiDocument<StreamSource<File>>;
 
 }  // namespace tinymobi
+
+// Makes the tinymobi namespace visible, so the classes can be used without the
+// prefix (MemoryMobi, FileMobi, Error, ...). Define TINYMOBI_NO_USING_NAMESPACE
+// before including this header to avoid it (then write tinymobi::MemoryMobi).
+#ifndef TINYMOBI_NO_USING_NAMESPACE
+using namespace tinymobi;
+#endif

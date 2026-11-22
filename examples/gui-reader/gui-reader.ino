@@ -17,8 +17,8 @@
 #endif
 
 File file;
-tinymobi::FileMobi<File> doc{tinymobi::StreamSource<File>(file)};
-tinymobi::MobiReaderApp<RGB565, tinymobi::FileMobi<File>> gui(DefaultBoard, doc);
+FileMobi<File> doc{StreamSource<File>(file)};
+MobiReaderApp<RGB565, FileMobi<File>> gui(DefaultBoard, doc);
 
 // the entries of a folder (the emulator's SD card uses host paths)
 std::vector<tinymd::FileEntry> listDirectory(const std::string& dir) {
@@ -44,13 +44,13 @@ bool openBook(const std::string& path) {
   {
     // check the candidate with a temporary document, so the open book is not touched yet
     File candidate = SD.open(path.c_str());
-    tinymobi::FileMobi<File> check{tinymobi::StreamSource<File>(candidate)};
-    if (!candidate || check.open() != tinymobi::Error::None) return false;
+    FileMobi<File> check{StreamSource<File>(candidate)};
+    if (!candidate || check.open() != Error::None) return false;
   }
   const std::string previous = bookPath;
   file.close();
   file = SD.open(path.c_str());
-  if (file && doc.open() == tinymobi::Error::None) {
+  if (file && doc.open() == Error::None) {
     bookPath = path;
     return true;
   }

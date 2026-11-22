@@ -21,8 +21,8 @@
 #endif
 
 File file;
-tinymobi::FileMobi<File> doc{tinymobi::StreamSource<File>(file)};
-tinymobi::MobiReaderApp<RGB565, tinymobi::FileMobi<File>> gui(DefaultBoard, doc);
+FileMobi<File> doc{StreamSource<File>(file)};
+MobiReaderApp<RGB565, FileMobi<File>> gui(DefaultBoard, doc);
 
 // writes one screenshot as a BMP file into the directory dir
 bool storeScreenshot(const char* dir, const char* name, const std::function<bool(Print&)>& write) {
@@ -39,7 +39,7 @@ void setup() {
   Serial.begin(115200);
   SD.begin(SS);
   file = SD.open(TINYMOBI_BOOK);
-  if (!file || doc.open() != tinymobi::Error::None) {
+  if (!file || doc.open() != Error::None) {
     Serial.println("cannot open the book");
     exit(1);
   }

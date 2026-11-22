@@ -48,8 +48,8 @@ namespace tinymobi {
  *
  * Usage:
  * @code
- *   tinymobi::FileMobi<File> doc{tinymobi::StreamSource<File>(file)};
- *   tinymobi::MobiReaderApp<RGB565, tinymobi::FileMobi<File>> gui(DefaultBoard, doc);
+ *   FileMobi<File> doc{StreamSource<File>(file)};
+ *   MobiReaderApp<RGB565, FileMobi<File>> gui(DefaultBoard, doc);
  *
  *   void setup() {
  *     doc.open();   // the document must be open

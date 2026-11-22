@@ -2,7 +2,7 @@
 
 [![Arduino Library](https://img.shields.io/badge/Arduino-Library-blue.svg)](https://www.arduino.cc/reference/en/libraries/)
 [![CMake](https://img.shields.io/badge/CMake-Supported-blue.svg)](https://github.com/pschatzmann/TinyMobi/blob/main/CMakeLists.txt)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](docs/license.md)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/pschatzmann/TinyMobi/wiki/License)
 
 ## Introduction
 
@@ -44,21 +44,21 @@ from memory or from an SD card, one record at a time, into a fixed buffer.
   to KindleUnpack on the test books.
 
 Limitations (DRM, images are not decoded, and others) are listed in
-[docs/limitations.md](docs/limitations.md).
+[Limitations](https://github.com/pschatzmann/TinyMobi/wiki/Limitations).
 
 ## Documentation
 
-- [Usage](docs/usage.md): opening books, reading text, bookmarks, the table of
+- [Usage](https://github.com/pschatzmann/TinyMobi/wiki/Usage): opening books, reading text, bookmarks, the table of
   contents, images, the cover, the no-KF8 build, and the Arduino example
-- [Desktop build and tests](docs/desktop.md): CMake, the test suite, and the
+- [Desktop build and tests](https://github.com/pschatzmann/TinyMobi/wiki/Desktop): CMake, the test suite, and the
   real books used for testing
-- [Reader GUI](docs/gui.md): the TinyMaterialDesign reader class and its desktop
+- [Reader GUI](https://github.com/pschatzmann/TinyMobi/wiki/GUI): the TinyMaterialDesign reader class and its desktop
   example
-- [Running the example on the desktop](docs/emulator.md): the Arduino emulator
-- [Limitations](docs/limitations.md): what is not supported
-- [Layout](docs/layout.md): the files of the project
+- [Running the example on the desktop](https://github.com/pschatzmann/TinyMobi/wiki/Emulator): the Arduino emulator
+- [Limitations](https://github.com/pschatzmann/TinyMobi/wiki/Limitations): what is not supported
+- [Layout](https://github.com/pschatzmann/TinyMobi/wiki/Layout): the files of the project
 - [API reference](https://pschatzmann.github.io/TinyMobi/namespaces.html) Doxygen Class Documentation
-- [License](docs/license.md)
+- [License](https://github.com/pschatzmann/TinyMobi/wiki/License)
 
 ## Installation in Arduino
 
@@ -71,6 +71,6 @@ git clone https://github.com/pschatzmann/TinyMobi.git
 
 I recommend to use git because you can easily update to the latest version just by executing the ```git pull``` command in the project folder.
 
-Then add `#include <TinyMobi.h>` to your sketch. See the [usage guide](docs/usage.md) and the `serial-reader` example.
+Then add `#include <TinyMobi.h>` to your sketch. See the [usage guide](https://github.com/pschatzmann/TinyMobi/wiki/Usage) and the `serial-reader` example.
 
-For desktop builds with CMake, see [Desktop build and tests](docs/desktop.md).
+For desktop builds with CMake, see [Desktop build and tests](https://github.com/pschatzmann/TinyMobi/wiki/Desktop).
