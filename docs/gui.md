@@ -128,7 +128,8 @@ Links are tappable where the link target can be resolved: MOBI6 links
 target cannot be resolved is shown as plain text.
 
 A heading (h1 to h6) is drawn in the title font, on its own line, after an empty
-line.
+line. At the top of a page there is no empty line. A first heading that is equal
+to the book title is not shown, because the title bar has it.
 
 On a page that is mostly links (such as a table of contents) the lines have more
 space between them, and a tap is assigned to the nearest line, so the wrong entry

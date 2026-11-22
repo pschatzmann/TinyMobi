@@ -825,7 +825,7 @@ class MobiReaderApp {
     std::string shown;
     std::vector<PageLink> links;
     std::vector<Span> headings;
-    stripLinks(text, shown, links, headings);
+    stripLinks(text, shown, links, headings, bookTitle_);
     text_.setPage(shown, std::move(links), std::move(headings));
     updateTitle();
     prev_.enabled = hasPrevious();
@@ -866,8 +866,12 @@ class MobiReaderApp {
 
   /// \brief Removes the link markers from text (see TextMode::PlainLinks) and
   /// returns the links with their character positions in the result.
+  /// \brief Splits the page text into the visible text, its links and headings. The
+  /// newlines at the top of the page are dropped (no empty line before the first
+  /// heading), and a first heading equal to hiddenHeading (the book title, shown in
+  /// the title bar) is removed.
   static void stripLinks(const std::string& text, std::string& out, std::vector<PageLink>& links,
-                         std::vector<Span>& headings) {
+                         std::vector<Span>& headings, const std::string& hiddenHeading) {
     out.clear();
     links.clear();
     headings.clear();
@@ -894,6 +898,7 @@ class MobiReaderApp {
         if (inLink && cur.end > cur.begin) links.push_back(cur);
         inLink = false;
       } else {
+        if (b == '\n' && out.empty()) continue;  // no empty line at the top of the page
         out.push_back(ch);
         if (inLink) cur.end = out.size();
       }
@@ -901,6 +906,34 @@ class MobiReaderApp {
     // a link or heading cut by the end of the page: keep its visible part
     if (inLink && !inTarget && cur.end > cur.begin) links.push_back(cur);
     if (inHead && out.size() > headBegin) headings.push_back(Span{headBegin, out.size()});
+
+    // a first heading that is the book title is not shown again (the title bar has it)
+    if (!headings.empty() && headings[0].begin == 0 && !hiddenHeading.empty() &&
+        trimmed(out.substr(0, headings[0].end)) == trimmed(hiddenHeading)) {
+      size_t cut = headings[0].end;
+      while (cut < out.size() && out[cut] == '\n') ++cut;
+      out.erase(0, cut);
+      headings.erase(headings.begin());
+      for (Span& h : headings) {
+        h.begin -= cut;
+        h.end -= cut;
+      }
+      std::vector<PageLink> kept;
+      for (PageLink& l : links) {
+        if (l.begin < cut) continue;
+        l.begin -= cut;
+        l.end -= cut;
+        kept.push_back(l);
+      }
+      links.swap(kept);
+    }
+  }
+
+  static std::string trimmed(const std::string& t) {
+    const size_t b = t.find_first_not_of(" \n\t\r");
+    if (b == std::string::npos) return std::string();
+    const size_t e = t.find_last_not_of(" \n\t\r");
+    return t.substr(b, e - b + 1);
   }
 
   /// \brief Cuts whole words until the text fits the text area. Returns true if
@@ -911,7 +944,7 @@ class MobiReaderApp {
     std::vector<PageLink> links;
     std::vector<Span> headings;
     // the text block gets the headings too: its height depends on them
-    stripLinks(text, shown, links, headings);
+    stripLinks(text, shown, links, headings, bookTitle_);
     text_.setPage(shown, links, headings);
     while (!text.empty() && text_.textHeight(text_.bounds.w) > text_.bounds.h) {
       if (text.size() < 2) break;
@@ -919,7 +952,7 @@ class MobiReaderApp {
       if (sp == std::string::npos || sp == 0) break;
       text.resize(sp);
       cut = true;
-      stripLinks(text, shown, links, headings);
+      stripLinks(text, shown, links, headings, bookTitle_);
       text_.setPage(shown, links, headings);
     }
     return cut;
@@ -928,10 +961,10 @@ class MobiReaderApp {
   Doc& doc_;
   // the themes must outlive the app: the screen keeps a pointer to them
   // the text is drawn with TinyFonts (Latin-1 characters, unlike the bitmap fonts)
-  tinyfonts::TinyGPUFont<RGB_T> labelFont_{Lato8};
-  tinyfonts::TinyGPUFont<RGB_T> bodyFont_{Lato10};
-  tinyfonts::TinyGPUFont<RGB_T> titleFont_{Lato16};
-  tinyfonts::TinyGPUFont<RGB_T> headlineFont_{Lato32};
+  TinyGPUFont<RGB_T> labelFont_{Lato8};
+  TinyGPUFont<RGB_T> bodyFont_{Lato10};
+  TinyGPUFont<RGB_T> titleFont_{Lato16};
+  TinyGPUFont<RGB_T> headlineFont_{Lato32};
   tinymd::MaterialTheme<RGB_T> darkTheme_ = tinymd::defaultDarkTheme<RGB_T>();
   tinymd::MaterialTheme<RGB_T> lightTheme_ = tinymd::defaultTheme<RGB_T>();
   tinymd::App<RGB_T> app_;
