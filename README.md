@@ -2,7 +2,7 @@
 
 [![Arduino Library](https://img.shields.io/badge/Arduino-Library-blue.svg)](https://www.arduino.cc/reference/en/libraries/)
 [![CMake](https://img.shields.io/badge/CMake-Supported-blue.svg)](https://github.com/pschatzmann/TinyMobi/blob/main/CMakeLists.txt)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/pschatzmann/TinyMobi/wiki/License)
+[![License: Apache](https://img.shields.io/badge/License-Apache-yellow.svg)](https://opensource.org/licenses/Apache-2.0)
 
 ## Introduction
 
@@ -70,7 +70,7 @@ Limitations (DRM, images are not decoded, and others) are listed in
 - [Limitations](https://github.com/pschatzmann/TinyMobi/wiki/Limitations): what is not supported
 - [Layout](https://github.com/pschatzmann/TinyMobi/wiki/Layout): the files of the project
 - [API reference](https://pschatzmann.github.io/TinyMobi/namespaces.html) Doxygen Class Documentation
-- [License](https://github.com/pschatzmann/TinyMobi/wiki/License)
+- [License](LICENSE)
 
 ## Installation in Arduino
 
