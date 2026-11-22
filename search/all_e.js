@@ -10,5 +10,6 @@ var searchData=
   ['openfiledialog_7',['openFileDialog',['../classtinymobi_1_1MobiReaderApp.html#af9aa2aa5fd07cf5adbf46f33820892e5',1,'tinymobi::MobiReaderApp']]],
   ['operator_21_3d_8',['operator!=',['../classtinymobi_1_1Position.html#a40170b0b9790137c19bbada47e19364d',1,'tinymobi::Position']]],
   ['operator_3d_3d_9',['operator==',['../classtinymobi_1_1Position.html#a788e2b276e2a6cb1d3f9de1cea0b4c6f',1,'tinymobi::Position']]],
-  ['outofrange_10',['OutOfRange',['../namespacetinymobi.html#a8de84e1f3f7e62f4c7783874dc6cf33da365b2699d38b61ef4b4c8a1066c8468f',1,'tinymobi']]]
+  ['optional_10',['Reader GUI (optional)',['../index.html#autotoc_md6',1,'']]],
+  ['outofrange_11',['OutOfRange',['../namespacetinymobi.html#a8de84e1f3f7e62f4c7783874dc6cf33da365b2699d38b61ef4b4c8a1066c8468f',1,'tinymobi']]]
 ];

@@ -2,10 +2,10 @@ var searchData=
 [
   ['imageref_0',['ImageRef',['../structtinymobi_1_1ImageRef.html',1,'tinymobi']]],
   ['imagetype_1',['imagetype',['../namespacetinymobi.html#abb9e12cb80a24306c79f6c8a9281ea60',1,'tinymobi::ImageType'],['../namespacetinymobi.html#a004b4fbbb8b706b0b74d922a7dd49053',1,'tinymobi::imageType(const uint8_t *data, size_t len)']]],
-  ['in_20arduino_2',['Installation in Arduino',['../index.html#autotoc_md4',1,'']]],
+  ['in_20arduino_2',['Installation in Arduino',['../index.html#autotoc_md8',1,'']]],
   ['index_3',['index',['../structtinymobi_1_1TocEntry.html#a3d7bb0960f1deda6e701138256e20347',1,'tinymobi::TocEntry']]],
   ['info_4',['info',['../structtinymobi_1_1Info.html',1,'tinymobi::Info'],['../classtinymobi_1_1MobiDocument.html#a965aa35c9f2ca911e23364487b848f02',1,'tinymobi::MobiDocument::info()']]],
-  ['installation_20in_20arduino_5',['Installation in Arduino',['../index.html#autotoc_md4',1,'']]],
+  ['installation_20in_20arduino_5',['Installation in Arduino',['../index.html#autotoc_md8',1,'']]],
   ['introduction_6',['Introduction',['../index.html#autotoc_md1',1,'']]],
   ['io_7',['Io',['../namespacetinymobi.html#a8de84e1f3f7e62f4c7783874dc6cf33da42a02b42ec22cfcbd78aaf7a66a5ee09',1,'tinymobi']]],
   ['isasciialpha_8',['isAsciiAlpha',['../namespacetinymobi_1_1detail.html#a522d702953a58e53e2000cb6ce3f8601',1,'tinymobi::detail']]],

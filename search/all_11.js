@@ -12,6 +12,8 @@ var searchData=
   ['showcover_9',['showCover',['../classtinymobi_1_1MobiReaderApp.html#a3e41ddbe906fcb7fafe6eb7076c5627a',1,'tinymobi::MobiReaderApp']]],
   ['showsettings_10',['showSettings',['../classtinymobi_1_1MobiReaderApp.html#aa7b9c943ae61e15191e4b01e0e25789c',1,'tinymobi::MobiReaderApp']]],
   ['size_11',['size',['../classtinymobi_1_1MemorySource.html#a52c7d3cdbd43cf32323a886053b5c65d',1,'tinymobi::MemorySource::size()'],['../classtinymobi_1_1StreamSource.html#a6dcc8a6029d7f78f393ea64c3b75c6c5',1,'tinymobi::StreamSource::size()']]],
-  ['start_12',['start',['../structtinymobi_1_1TocEntry.html#a7717ecd087f797661663404d9fa7633a',1,'tinymobi::TocEntry']]],
-  ['streamsource_13',['streamsource',['../classtinymobi_1_1StreamSource.html',1,'tinymobi::StreamSource&lt; File &gt;'],['../classtinymobi_1_1StreamSource.html#af0abb2683b71fd582309ca346ef22dd8',1,'tinymobi::StreamSource::StreamSource()']]]
+  ['small_20footprint_12',['Small footprint',['../index.html#autotoc_md3',1,'']]],
+  ['start_13',['start',['../structtinymobi_1_1TocEntry.html#a7717ecd087f797661663404d9fa7633a',1,'tinymobi::TocEntry']]],
+  ['streamsource_14',['streamsource',['../classtinymobi_1_1StreamSource.html',1,'tinymobi::StreamSource&lt; File &gt;'],['../classtinymobi_1_1StreamSource.html#af0abb2683b71fd582309ca346ef22dd8',1,'tinymobi::StreamSource::StreamSource()']]],
+  ['structure_15',['Book structure',['../index.html#autotoc_md5',1,'']]]
 ];

@@ -79,23 +79,44 @@ Introduction</h1>
 <p>TinyMobi is a header-only MOBI / PalmDOC parser for Arduino and desktop C++. It is designed for document readers on microcontrollers: the book is streamed from memory or from an SD card, one record at a time, into a fixed buffer.</p>
 <h1><a class="anchor" id="autotoc_md2"></a>
 Features</h1>
+<h2><a class="anchor" id="autotoc_md3"></a>
+Small footprint</h2>
 <ul>
 <li>Header only: <code>#include &lt;<a class="el" href="TinyMobi_8h.html">TinyMobi.h</a>&gt;</code>, no heap allocation.</li>
-<li>The file is never loaded completely. Headers, metadata and the record table are read on demand, and text is decompressed one record at a time into a fixed buffer (<code>RecordBufferSize</code>, default 4096 bytes).</li>
+<li>The file is never loaded completely. Headers, metadata and the record table are read on demand.</li>
+<li>Text is decompressed one record at a time into a fixed buffer (<code>RecordBufferSize</code>, default 4096 bytes).</li>
 <li>Works with memory buffers (<code>MemorySource</code>) and any seekable file (<code>StreamSource&lt;File&gt;</code>: SD, LittleFS, FFat, SPIFFS, SdFat).</li>
-<li>Text compression: PalmDOC (LZ77), HUFF/CDIC and uncompressed, with trailing entries and multibyte overlap.</li>
+</ul>
+<h2><a class="anchor" id="autotoc_md4"></a>
+Formats and text</h2>
+<ul>
+<li>Compression: PalmDOC (LZ77), HUFF/CDIC and uncompressed, with trailing entries and multibyte overlap.</li>
+<li>KF8 (AZW3 and hybrid MOBI): the XHTML parts are assembled from the skeleton and fragment tables and read like any other text. The output is byte identical to KindleUnpack on the test books.</li>
+<li>One text stream for every format: <code>read()</code> delivers the book in reading order.</li>
 <li>UTF-8 output; CP1252 books are converted on the fly.</li>
 <li>Markup mode (raw HTML-like book text) or plain text mode (tags removed, block tags become newlines, entities decoded).</li>
-<li>One text stream for every format: <code>read()</code> delivers the book in reading order (KF8 parts are assembled automatically). <code>position()</code> / <code>seek()</code> give section-based bookmarks.</li>
+<li>Bookmarks: <code>position()</code> and <code>seek()</code> work with section-based positions.</li>
+</ul>
+<h2><a class="anchor" id="autotoc_md5"></a>
+Book structure</h2>
+<ul>
 <li>Metadata: title, author, publisher, language, date, cover record.</li>
-<li>Table of contents (NCX index): titles, start positions, levels and the tree (not the start positions of KF8 books, see the limitations). The links of the text (<code>filepos</code> and <code>kindle:pos</code>) resolve to positions with <code>resolveLink()</code>, also in KF8 books.</li>
-<li>Raw access to any PalmDB record with <code>readRecord()</code> and <code>recordLength()</code>. <code>imageType()</code> recognizes JPEG, PNG, GIF and BMP data, so covers can be saved.</li>
+<li>Table of contents (NCX index): titles, start positions, levels and the tree. The start positions are not available for KF8 books (see the limitations).</li>
+<li>Links in the text (<code>filepos</code> and <code>kindle:pos</code>) resolve to positions with <code>resolveLink()</code>, also in KF8 books.</li>
 <li>Image references in the text (<code>&lt;img recindex&gt;</code> and <code>kindle:embed</code>).</li>
-<li>Optional reader GUI for TinyMaterialDesign and TinyFonts (<code><a class="el" href="MobiReaderApp_8h.html" title="A page-by-page book reader GUI for TinyMaterialDesign.">src/TinyMobi/MobiReaderApp.h</a></code>): page-by-page reading with swipe navigation, tappable links (the table of contents is part of the text), headings, a title bar with the page number, a system menu with a settings screen (dark mode, navigation buttons, page number), and the JPEG cover on the first page.</li>
-<li>KF8 (AZW3 and hybrid MOBI): the XHTML parts are assembled from the skeleton and fragment tables and read like any other text. The output is byte identical to KindleUnpack on the test books.</li>
+<li>Raw access to any PalmDB record with <code>readRecord()</code> and <code>recordLength()</code>. <code>imageType()</code> recognizes JPEG, PNG, GIF and BMP data, so covers can be saved.</li>
+</ul>
+<h2><a class="anchor" id="autotoc_md6"></a>
+Reader GUI (optional)</h2>
+<p>Built on TinyMaterialDesign and TinyFonts, see <code><a class="el" href="MobiReaderApp_8h.html" title="A page-by-page book reader GUI for TinyMaterialDesign.">src/TinyMobi/MobiReaderApp.h</a></code>.</p>
+<ul>
+<li>Page-by-page reading with swipe navigation.</li>
+<li>Tappable links: the table of contents is part of the text.</li>
+<li>Headings, a title bar with the page number, and the JPEG cover on the first page.</li>
+<li>A system menu with a settings screen: dark mode, navigation buttons, page number.</li>
 </ul>
 <p>Limitations (DRM, images are not decoded, and others) are listed in <a href="https://github.com/pschatzmann/TinyMobi/wiki/Limitations">Limitations</a>.</p>
-<h1><a class="anchor" id="autotoc_md3"></a>
+<h1><a class="anchor" id="autotoc_md7"></a>
 Documentation</h1>
 <ul>
 <li><a href="https://github.com/pschatzmann/TinyMobi/wiki/Usage">Usage</a>: opening books, reading text, bookmarks, the table of contents, images, the cover, the no-KF8 build, and the Arduino example</li>
@@ -107,7 +128,7 @@ Documentation</h1>
 <li><a href="https://pschatzmann.github.io/TinyMobi/namespaces.html">API reference</a> Doxygen Class Documentation</li>
 <li><a href="https://github.com/pschatzmann/TinyMobi/wiki/License">License</a></li>
 </ul>
-<h1><a class="anchor" id="autotoc_md4"></a>
+<h1><a class="anchor" id="autotoc_md8"></a>
 Installation in Arduino</h1>
 <p>You can download the library as zip and call include Library -&gt; zip library. Or you can git clone this project into the Arduino libraries folder e.g. with</p>
 <div class="fragment"><div class="line">cd  ~/Documents/Arduino/libraries</div>
