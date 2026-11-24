@@ -52,7 +52,8 @@ Built on TinyMaterialDesign and TinyFonts, see `src/TinyMobi/MobiReaderApp.h`.
 
 - Page-by-page reading with swipe navigation.
 - Tappable links: the table of contents is part of the text.
-- Headings, a title bar with the page number, and the JPEG cover on the first page.
+- Headings, images in the text (JPEG, PNG and GIF, tap to view full screen), a title
+  bar with the page number, and the JPEG cover on the first page.
 - A system menu with a settings screen: dark mode, navigation buttons, page number.
 
 Limitations (DRM, images are not decoded, and others) are listed in
