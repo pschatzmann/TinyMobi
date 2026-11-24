@@ -793,6 +793,30 @@ static void testPlainLinks() {
   CHECK(readAll(doc).find("filepos=0000000030") != std::string::npos);
 }
 
+// ---------------------------------------------------------------------------
+// Images in plain text with markers (TextMode::PlainLinks)
+// ---------------------------------------------------------------------------
+static void testPlainImages() {
+  BookSpec spec;
+  spec.compression = 1;
+  spec.image = literal("\x89PNG-fake");
+  spec.textRecords.push_back(literal("<html><body><p>Before</p><img recindex=\"1\"/><p>After</p></body></html>"));
+  Bytes file = buildMobi(spec);
+  MemoryMobiNoKf8 doc(MemorySource(file.data(), file.size()), TextMode::PlainLinks);
+  CHECK(doc.open() == Error::None);
+  uint32_t record = kNoRecord;
+  doc.forEachImageRef([&](const ImageRef& ref) -> bool {
+    record = ref.record;
+    return false;
+  });
+  CHECK(record != kNoRecord);
+  const std::string out = readAll(doc);
+  // the image is a paragraph of its own, marked with its record number
+  const std::string marker = std::string("\x06") + std::to_string(record) + "\x07";
+  CHECK(out.find("\n\n" + marker + "\n") != std::string::npos);
+  CHECK(out.find("Before") < out.find(marker) && out.find(marker) < out.find("After"));
+}
+
 int main(int argc, char** argv) {
   testUtf8Markup();
   testPalmDocCompression();
@@ -812,6 +836,7 @@ int main(int argc, char** argv) {
   testPlainSkipsHead();
   testPlainSkipsUnclosedHead();
   testPlainLinks();
+  testPlainImages();
 
   for (int i = 1; i < argc; ++i) smokeFile(argv[i]);
 

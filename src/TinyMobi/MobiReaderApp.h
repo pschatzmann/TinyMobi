@@ -21,6 +21,7 @@
 #include "TinyMaterialDesign.h"
 #include "TinyMobi.h"
 #include "TinyMobi/MobiReaderCover.h"
+#include "TinyMobi/MobiReaderImage.h"
 
 namespace tinymobi {
 
@@ -32,9 +33,9 @@ namespace tinymobi {
  *   the first page. A tap or a swipe to the left opens the text.
  * - Text: a title bar with the book title, the page number (optional, see the
  *   settings) and a system menu (the menu icon in the title bar), and the text
- *   of the page. Pages are turned
- *   by swiping left (next) and right (previous). The Previous and Next buttons
- *   are optional (see the settings).
+ *   of the page. Images in the text are shown scaled to the text width, and a tap
+ *   shows one full screen. Pages are turned by swiping left (next) and right
+ *   (previous). The Previous and Next buttons are optional (see the settings).
  * - System menu: "Go to start", "Bookmarks" (add the shown page, jump to saved
  *   bookmarks), "Settings", "About" (author, publisher and language) and, if
  *   onClose is set, "Close". The table of contents is part of the text: its
@@ -116,6 +117,8 @@ class MobiReaderApp {
     app_.begin();
     tinymd::Screen<RGB_T>& screen = app_.screen();
     text_.setRole(tinymd::TypographyRole::kBody);
+    text_.onImage = [this](uint32_t record) { openImage(record); };
+    imageView_.onClose = [this]() { app_.screen().dismissDialog(); };
     text_.onLink = [this](const std::string& target) {
       Position p;
       if (!doc_.resolveLink(target.c_str(), p)) return;
@@ -194,6 +197,7 @@ class MobiReaderApp {
     cover_.load(doc_, app_.width(), app_.height());
     bookmarks_.clear();
     history_.clear();
+    imageCache_.clear();
     layout();
     goTo(Position(0, 0));
     if (cover_.has()) showCover();
@@ -380,6 +384,47 @@ class MobiReaderApp {
     size_t end = 0;
   };
 
+  /// \brief An image marker in the page text: its position and PalmDB record.
+  struct ImageSpan {
+    size_t begin = 0;
+    uint32_t record = 0;
+  };
+
+  /// \brief An image of the page: its marker position, record and decoded picture
+  /// (null if it could not be decoded: the line is left empty).
+  struct PageImage {
+    size_t begin = 0;
+    uint32_t record = 0;
+    std::shared_ptr<tinygpu::Surface<RGB_T>> pic;
+  };
+
+  /// \brief The full-screen view of an image: black, the picture centred, a tap
+  /// closes it.
+  class ImageView : public tinymd::Widget<RGB_T> {
+   public:
+    std::function<void()> onClose;
+
+    void setImage(std::shared_ptr<tinygpu::Surface<RGB_T>> pic) { pic_ = std::move(pic); }
+
+    void draw(tinygpu::ISurface<RGB_T>& target) override {
+      target.fillRect(static_cast<size_t>(this->bounds.x), static_cast<size_t>(this->bounds.y),
+                      static_cast<size_t>(this->bounds.w), static_cast<size_t>(this->bounds.h), RGB_T(0, 0, 0));
+      if (!pic_) return;
+      const int32_t x = this->bounds.x + (this->bounds.w - static_cast<int32_t>(pic_->width())) / 2;
+      const int32_t y = this->bounds.y + (this->bounds.h - static_cast<int32_t>(pic_->height())) / 2;
+      target.drawSprite(static_cast<size_t>(x < 0 ? 0 : x), static_cast<size_t>(y < 0 ? 0 : y), *pic_);
+    }
+
+    bool onGesture(const tinygpu::GestureEvent& event) override {
+      if (event.phase != tinygpu::GesturePhase::kEnded || event.type != tinygpu::GestureType::kTap) return false;
+      if (onClose) onClose();
+      return true;
+    }
+
+   private:
+    std::shared_ptr<tinygpu::Surface<RGB_T>> pic_;
+  };
+
   /// \brief The text of a page. Swipes turn pages; a tap on a link calls onLink
   /// with its target. Headings are drawn with the title font, on their own lines.
   /// The layout is computed in one place, so drawing, the tap mapping and the
@@ -391,9 +436,13 @@ class MobiReaderApp {
     std::function<void(bool)> onSwipe;
     /// \brief Called with the target of a tapped link.
     std::function<void(const std::string&)> onLink;
+    /// \brief Called with the PalmDB record of a tapped image.
+    std::function<void(uint32_t)> onImage;
 
-    /// \brief Shows text (already without markers) with its links and headings.
-    void setPage(const std::string& text, std::vector<PageLink> links, std::vector<Span> headings) {
+    /// \brief Shows text (already without markers) with its links, headings and images.
+    void setPage(const std::string& text, std::vector<PageLink> links, std::vector<Span> headings,
+                 std::vector<PageImage> images) {
+      images_ = std::move(images);
       // a page that is mostly links (a table of contents) gets more space between the
       // lines, so a tap is less likely to hit the neighbouring entry
       size_t linkChars = 0;
@@ -417,6 +466,11 @@ class MobiReaderApp {
       std::vector<Line> lines;
       layoutLines(this->bounds.w, lines);
       for (const Line& l : lines) {
+        if (l.pic != nullptr) {
+          const int32_t x = this->bounds.x + (this->bounds.w - static_cast<int32_t>(l.pic->width())) / 2;
+          target.drawSprite(static_cast<size_t>(x < 0 ? 0 : x), static_cast<size_t>(l.y), *l.pic);
+          continue;
+        }
         if (l.text.empty()) continue;
         const RGB_T color = l.heading ? t.colors.onSurface : t.colors.onSurfaceVariant;
         l.font->drawText(target, static_cast<int16_t>(this->bounds.x), static_cast<int16_t>(l.y), l.text.c_str(),
@@ -430,6 +484,11 @@ class MobiReaderApp {
         std::string target;
         if (onLink && linkAt(event.point.x, event.point.y, target)) {
           onLink(target);
+          return true;
+        }
+        uint32_t record = 0;
+        if (onImage && imageAt(event.point.x, event.point.y, record)) {
+          onImage(record);
           return true;
         }
         return false;
@@ -463,9 +522,28 @@ class MobiReaderApp {
       std::vector<Word> words;
       tinygpu::IFont<RGB_T>* font = nullptr;
       bool heading = false;
+      const tinygpu::Surface<RGB_T>* pic = nullptr;  // an image line
+      uint32_t record = 0;
       int32_t y = 0;             // top of the line
-      int32_t height = 0;        // font height plus spacing
+      int32_t height = 0;        // font height (or picture height) plus spacing
     };
+
+    /// The marker character of an image in the page text (see TinyMobi.h).
+    static constexpr char kImageMarker = '\x06';
+
+    /// An image line: the picture of the image at position ps (blank if it has none).
+    void imageLine(size_t ps, tinygpu::IFont<RGB_T>* font, std::vector<Line>& out) const {
+      Line line;
+      line.font = font;
+      for (const PageImage& im : images_) {
+        if (im.begin == ps && im.pic) {
+          line.pic = im.pic.get();
+          line.record = im.record;
+          break;
+        }
+      }
+      out.push_back(line);
+    }
 
     bool isHeading(size_t index) const {
       for (const Span& h : headings_) {
@@ -486,15 +564,20 @@ class MobiReaderApp {
         size_t pe = text.find('\n', ps);
         if (pe == std::string::npos) pe = text.size();
         if (ps == pe && pe == text.size() && !text.empty()) break;  // no blank line after the last newline
-        const bool heading = isHeading(ps);
-        wrapParagraph(text, ps, pe, width, heading ? title : body, heading, out);
+        if (pe == ps + 1 && text[ps] == kImageMarker) {
+          imageLine(ps, body, out);
+        } else {
+          const bool heading = isHeading(ps);
+          wrapParagraph(text, ps, pe, width, heading ? title : body, heading, out);
+        }
         if (pe >= text.size()) break;
         ps = pe + 1;
       }
       int32_t y = this->bounds.y;
       for (Line& l : out) {
         l.y = y;
-        l.height = static_cast<int32_t>(l.font->getHeight(1)) + spacing_;
+        l.height = (l.pic != nullptr ? static_cast<int32_t>(l.pic->height())
+                                     : static_cast<int32_t>(l.font->getHeight(1))) + spacing_;
         y += l.height;
       }
     }
@@ -536,6 +619,22 @@ class MobiReaderApp {
       if (out.size() == before) endLine();  // an empty paragraph is a blank line
     }
 
+    /// \brief Finds the image under the point (x, y), if any.
+    bool imageAt(int32_t x, int32_t y, uint32_t& record) const {
+      if (images_.empty()) return false;
+      std::vector<Line> lines;
+      layoutLines(this->bounds.w, lines);
+      for (const Line& l : lines) {
+        const int32_t top = l.y - spacing_ / 2;
+        const int32_t bottom = l.y + l.height - spacing_ / 2;
+        if (y < top || y >= bottom) continue;
+        if (l.pic == nullptr) return false;
+        record = l.record;
+        return x >= this->bounds.x && x < this->bounds.x + this->bounds.w;
+      }
+      return false;
+    }
+
     /// \brief Finds the link under the point (x, y), if any.
     bool linkAt(int32_t x, int32_t y, std::string& target) const {
       if (links_.empty()) return false;
@@ -567,6 +666,7 @@ class MobiReaderApp {
 
     std::vector<PageLink> links_;
     std::vector<Span> headings_;
+    std::vector<PageImage> images_;
   };
 
   /// \brief The place of the page number: left of the menu icon, in the title bar.
@@ -856,11 +956,7 @@ class MobiReaderApp {
     if (index + 1 == starts_.size() && (!eof || cut) && starts_.size() < kMaxPages) {
       starts_.push_back(end);
     }
-    std::string shown;
-    std::vector<PageLink> links;
-    std::vector<Span> headings;
-    stripLinks(text, shown, links, headings, bookTitle_);
-    text_.setPage(shown, std::move(links), std::move(headings));
+    setText(text);
     updateTitle();
     prev_.enabled = hasPrevious();
     next_.enabled = hasNext();
@@ -905,13 +1001,17 @@ class MobiReaderApp {
   /// heading), and a first heading equal to hiddenHeading (the book title, shown in
   /// the title bar) is removed.
   static void stripLinks(const std::string& text, std::string& out, std::vector<PageLink>& links,
-                         std::vector<Span>& headings, const std::string& hiddenHeading) {
+                         std::vector<Span>& headings, std::vector<ImageSpan>& images,
+                         const std::string& hiddenHeading) {
     out.clear();
     links.clear();
     headings.clear();
+    images.clear();
     PageLink cur;
     size_t headBegin = 0;
     bool inHead = false, inTarget = false, inLink = false;
+    bool inImage = false;
+    uint32_t imageRecord = 0;
     for (char ch : text) {
       const uint8_t b = static_cast<uint8_t>(ch);
       if (b == kHeadBegin) {
@@ -920,6 +1020,17 @@ class MobiReaderApp {
       } else if (b == kHeadEnd) {
         if (inHead && out.size() > headBegin) headings.push_back(Span{headBegin, out.size()});
         inHead = false;
+      } else if (b == kImageBegin) {
+        inImage = true;
+        imageRecord = 0;
+      } else if (inImage) {
+        if (b == kImageEnd) {
+          inImage = false;
+          images.push_back(ImageSpan{out.size(), imageRecord});
+          out.push_back('\x06');  // the image placeholder (PageTextBlock draws the picture)
+        } else if (b >= '0' && b <= '9') {
+          imageRecord = imageRecord * 10 + (b - '0');
+        }
       } else if (b == kLinkBegin) {
         cur = PageLink();
         cur.begin = out.size();
@@ -960,6 +1071,13 @@ class MobiReaderApp {
         kept.push_back(l);
       }
       links.swap(kept);
+      std::vector<ImageSpan> keptImages;
+      for (ImageSpan& im : images) {
+        if (im.begin < cut) continue;
+        im.begin -= cut;
+        keptImages.push_back(im);
+      }
+      images.swap(keptImages);
     }
   }
 
@@ -974,22 +1092,62 @@ class MobiReaderApp {
   /// something was cut. The text is measured without its link markers.
   bool fitText(std::string& text) {
     bool cut = false;
-    std::string shown;
-    std::vector<PageLink> links;
-    std::vector<Span> headings;
-    // the text block gets the headings too: its height depends on them
-    stripLinks(text, shown, links, headings, bookTitle_);
-    text_.setPage(shown, links, headings);
+    setText(text);  // the text block gets the headings and images too: its height depends on them
     while (!text.empty() && text_.textHeight(text_.bounds.w) > text_.bounds.h) {
       if (text.size() < 2) break;
       size_t sp = text.find_last_of(" \n\t\r", text.size() - 2);
       if (sp == std::string::npos || sp == 0) break;
       text.resize(sp);
       cut = true;
-      stripLinks(text, shown, links, headings, bookTitle_);
-      text_.setPage(shown, links, headings);
+      setText(text);
     }
     return cut;
+  }
+
+  /// \brief Shows the page text (raw, with markers): the links, headings and images
+  /// are set, and each image is decoded to fit the text area.
+  void setText(const std::string& raw) {
+    std::string shown;
+    std::vector<PageLink> links;
+    std::vector<Span> headings;
+    std::vector<ImageSpan> spans;
+    stripLinks(raw, shown, links, headings, spans, bookTitle_);
+    std::vector<PageImage> images;
+    for (const ImageSpan& span : spans) {
+      images.push_back(PageImage{span.begin, span.record,
+                                 imageFor(span.record, text_.bounds.w, text_.bounds.h)});
+    }
+    text_.setPage(shown, std::move(links), std::move(headings), std::move(images));
+  }
+
+  /// \brief The decoded picture of an image record, fitted to maxW x maxH. The last
+  /// few results are kept, so turning back to a page does not decode again.
+  std::shared_ptr<tinygpu::Surface<RGB_T>> imageFor(uint32_t record, size_t maxW, size_t maxH) {
+    for (const CachedImage& c : imageCache_) {
+      if (c.record == record && c.maxW == maxW && c.maxH == maxH) return c.pic;
+    }
+    std::shared_ptr<tinygpu::Surface<RGB_T>> pic;
+    uint32_t len = 0;
+    if (record != kNoRecord && doc_.recordLength(record, len) == Error::None && len > 0) {
+      std::vector<uint8_t> bytes(len);
+      size_t n = 0;
+      if (doc_.readRecord(record, bytes.data(), bytes.size(), n) == Error::None) {
+        pic = decodeImageFit<RGB_T>(bytes.data(), n, maxW, maxH);
+      }
+    }
+    if (imageCache_.size() >= kImageCache) imageCache_.erase(imageCache_.begin());
+    imageCache_.push_back(CachedImage{record, maxW, maxH, pic});
+    return pic;
+  }
+
+  /// \brief Shows an image full screen; a tap closes it.
+  void openImage(uint32_t record) {
+    const size_t w = app_.width(), h = app_.height();
+    std::shared_ptr<tinygpu::Surface<RGB_T>> pic = imageFor(record, w, h);
+    if (!pic) return;
+    imageView_.setImage(pic);
+    imageView_.bounds = tinymd::Bounds(0, 0, static_cast<int32_t>(w), static_cast<int32_t>(h));
+    app_.screen().presentDialog(imageView_);
   }
 
   Doc& doc_;
@@ -1003,6 +1161,7 @@ class MobiReaderApp {
   tinymd::MaterialTheme<RGB_T> lightTheme_ = tinymd::defaultTheme<RGB_T>();
   tinymd::App<RGB_T> app_;
   PageTextBlock text_;
+  ImageView imageView_;
   tinymd::Button<RGB_T> prev_;
   tinymd::Button<RGB_T> next_;
   tinymd::AppBar<RGB_T> appBar_;
@@ -1016,6 +1175,14 @@ class MobiReaderApp {
   tinymd::Container<RGB_T> bookmarksPanel_;
   tinymd::Card<RGB_T> bookmarksBackground_;
   std::vector<std::unique_ptr<tinymd::ListItem<RGB_T>>> bookmarkRows_;
+  struct CachedImage {
+    uint32_t record;
+    size_t maxW;
+    size_t maxH;
+    std::shared_ptr<tinygpu::Surface<RGB_T>> pic;
+  };
+  static constexpr size_t kImageCache = 4;
+  std::vector<CachedImage> imageCache_;
   std::vector<Bookmark> bookmarks_;
   std::vector<Jump> history_;  // the pages that links were followed from
   tinymd::ListItem<RGB_T> settingsItem_;

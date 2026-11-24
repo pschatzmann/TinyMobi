@@ -90,7 +90,10 @@ enum class TextMode : uint8_t {
 };
 
 /// \brief Markers used by TextMode::PlainLinks.
-enum : uint8_t { kLinkBegin = 0x01, kLinkTarget = 0x02, kLinkEnd = 0x03, kHeadBegin = 0x04, kHeadEnd = 0x05 };
+enum : uint8_t {
+  kLinkBegin = 0x01, kLinkTarget = 0x02, kLinkEnd = 0x03, kHeadBegin = 0x04, kHeadEnd = 0x05,
+  kImageBegin = 0x06, kImageEnd = 0x07
+};
 
 /// \brief Position in the book text: a section (text record or KF8 part) and an offset in it.
 class Position {
@@ -2018,6 +2021,26 @@ private:
     _lastOut = bytes[n - 1];
   }
 
+  /// \brief Emits an image marker: an empty line, kImageBegin, the record number,
+  /// kImageEnd and a newline (the image is a paragraph of its own).
+  void emitImageMarker(uint32_t record) {
+    uint8_t buf[kPendSize];
+    size_t n = 0;
+    if (_lastOut != '\n') buf[n++] = '\n';
+    buf[n++] = '\n';
+    buf[n++] = kImageBegin;
+    char digits[10];
+    int k = 0;
+    do {
+      digits[k++] = static_cast<char>('0' + record % 10);
+      record /= 10;
+    } while (record != 0);
+    while (k > 0) buf[n++] = static_cast<uint8_t>(digits[--k]);
+    buf[n++] = kImageEnd;
+    buf[n++] = '\n';
+    emitPending(buf, n);
+  }
+
   /// \brief Emits a link marker: kLinkBegin, target, kLinkTarget (the link text follows).
   void emitLinkBegin(const char* target, size_t n) {
     uint8_t buf[kPendSize];
@@ -2146,6 +2169,21 @@ private:
               _linkOpen = false;
               emitByte(kLinkEnd);
               return true;
+            }
+          }
+          if (_mode == TextMode::PlainLinks && !_skipping && !_tagClose && tagNameIs("img")) {
+            // an image: its own paragraph with the PalmDB record of the image
+            // "img" and a space (the attributes do not keep the space after the name), then the attributes
+            char tagBuf[4 + kAttrSize];
+            memcpy(tagBuf, "img ", 4);
+            memcpy(tagBuf + 4, _attr, _attrLen);
+            uint32_t number = 0;
+            if (parseImageTag(reinterpret_cast<const uint8_t*>(tagBuf), 4 + _attrLen, number)) {
+              const uint32_t record = imageRecordOf(number);
+              if (record != kNoRecord) {
+                emitImageMarker(record);
+                return true;
+              }
             }
           }
           if (_mode == TextMode::PlainLinks && !_skipping && isHeadingTag()) {
