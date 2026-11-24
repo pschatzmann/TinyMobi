@@ -51,6 +51,12 @@ namespace tinymobi {
  *   FileMobi<File> doc{StreamSource<File>(file)};
  *   MobiReaderApp<RGB565, FileMobi<File>> gui(DefaultBoard, doc);
  *
+ * A landscape panel can show the UI rotated by 90 degrees (portrait). Wrap the
+ * board in TinyGPU's LCDBoardRotated, which rotates in hardware if the display
+ * driver supports it and in software otherwise:
+ *   tinygpu::LCDBoardRotated rotated(DefaultBoard);
+ *   MobiReaderApp<RGB565, FileMobi<File>> gui(rotated, doc);
+ *
  *   void setup() {
  *     doc.open();   // the document must be open
  *     gui.begin();
@@ -100,7 +106,10 @@ class MobiReaderApp {
   /// otherwise the open dialog is shown.
   void begin() {
     // the themes use the TinyFonts fonts (the themes must be set before the app starts)
-    const tinymd::Typography<RGB_T> fonts{&labelFont_, &bodyFont_, &titleFont_, &headlineFont_};
+    // small screens use the smaller Lato sizes: body text as the label font, titles as the body font
+    const bool small = app_.width() < 200 || app_.height() < 240;
+    const tinymd::Typography<RGB_T> fonts = small ? tinymd::Typography<RGB_T>{&labelFont_, &labelFont_, &bodyFont_, &headlineFont_}
+                                                  : tinymd::Typography<RGB_T>{&labelFont_, &bodyFont_, &titleFont_, &headlineFont_};
     darkTheme_.typography = fonts;
     lightTheme_.typography = fonts;
     app_.screen().setTheme(dark_ ? darkTheme_ : lightTheme_);  // the screen has its own copy
@@ -161,7 +170,7 @@ class MobiReaderApp {
     fileDialog_.onCancel = doc_.isOpen() ? std::function<void()>([this]() { closeFileDialog(); })
                                          : std::function<void()>();
     fileDialog_.setTheme(dark_ ? darkTheme_ : lightTheme_);
-    fileDialog_.open(tinymd::Bounds(8, kTitleHeight + 4, w - 16, h - kTitleHeight - 12), "Open book", libraryDir,
+    fileDialog_.open(tinymd::Bounds(8, titleHeight() + 4, w - 16, h - titleHeight() - 12), "Open book", libraryDir,
                      bookExtensions);
     // a fixed widget, not a dialog: the title bar and its menu stay usable
     fileDialog_.panel().visible = true;
@@ -332,6 +341,16 @@ class MobiReaderApp {
   static constexpr int32_t kBadgeGap = 4;      // space between the page number and the menu icon
   static constexpr int32_t kRowHeight = 44;
   static constexpr size_t kMaxBookmarks = 32;
+
+  // The sizes above are for the 240 x 320 screen. The layout scales them to the
+  // screen: a smaller screen gets a smaller title bar, navigation bar, rows and
+  // buttons, so the same code works from about 160 x 128 pixels up.
+  int32_t titleHeight() const { return std::min<int32_t>(kTitleHeight, std::max<int32_t>(28, app_.height() / 5)); }
+  int32_t navBarHeight() const { return std::min<int32_t>(kNavHeight, std::max<int32_t>(32, app_.height() / 5)); }
+  int32_t rowHeight() const {
+    return std::min<int32_t>(kRowHeight, std::max<int32_t>(24, (app_.height() - titleHeight()) / 6));
+  }
+  int32_t buttonWidth() const { return std::min<int32_t>(kButtonWidth, (app_.width() - 3 * kMargin) / 2); }
 
   /// \brief A page that a link was followed from: its start, and whether the
   /// cover was shown.
@@ -555,7 +574,7 @@ class MobiReaderApp {
   /// is as wide as the number (see updateTitle()).
   tinymd::Bounds pageLabelBounds(int32_t textWidth) const {
     const tinymd::Bounds menu = appBar_.trailingRect();
-    return tinymd::Bounds(menu.x - kBadgeGap - textWidth, appBar_.bounds.y, textWidth, kTitleHeight);
+    return tinymd::Bounds(menu.x - kBadgeGap - textWidth, appBar_.bounds.y, textWidth, titleHeight());
   }
 
   /// \brief True if the page number is shown (the setting, and a book is open).
@@ -563,7 +582,7 @@ class MobiReaderApp {
 
   /// \brief The title bar with the book title, the page number and the menu icon.
   void buildTitleBar() {
-    appBar_ = tinymd::AppBar<RGB_T>(tinymd::Bounds(0, 0, app_.width(), kTitleHeight), "");
+    appBar_ = tinymd::AppBar<RGB_T>(tinymd::Bounds(0, 0, app_.width(), titleHeight()), "");
     menuButton_ = tinymd::IconButton<RGB_T>(appBar_.trailingRect(), tinymd::drawMenu<RGB_T>);
     menuButton_.onClick = [this]() {
       closeFileDialog();
@@ -579,10 +598,11 @@ class MobiReaderApp {
 
   /// \brief The system menu.
   void buildMenu() {
-    constexpr int32_t menuW = 170;
-    constexpr int32_t itemH = 32;
     const int32_t w = app_.width();
-    menu_ = tinymd::Menu<RGB_T>(tinymd::Bounds(w - menuW - 4, kTitleHeight, menuW, 7 * itemH));
+    const int32_t h = app_.height();
+    const int32_t menuW = std::min<int32_t>(170, w - 8);
+    const int32_t itemH = std::min<int32_t>(32, std::max<int32_t>(20, (h - titleHeight()) / 7));
+    menu_ = tinymd::Menu<RGB_T>(tinymd::Bounds(w - menuW - 4, titleHeight(), menuW, 7 * itemH));
 
     openItem_ = tinymd::ListItem<RGB_T>(menu_.itemRect(0, itemH), "Open book");
     openItem_.onClick = [this]() {
@@ -633,7 +653,7 @@ class MobiReaderApp {
   void openAbout() {
     const int32_t w = app_.width();
     const int32_t h = app_.height();
-    const int32_t dialogH = 200;
+    const int32_t dialogH = std::min<int32_t>(200, h - 16);
     // the page that is shown now (the dialog copies the text)
     const std::string page = coverShown_ ? std::string("Cover") : std::to_string(pageNumber());
     const std::string text = aboutText_ + "\nPage: " + page;
@@ -650,34 +670,48 @@ class MobiReaderApp {
   void buildSettings() {
     const int32_t w = app_.width();
     const int32_t h = app_.height();
-    const int32_t panelH = 300;
-    const tinymd::Bounds panel(12, (h - panelH) / 2, w - 24, panelH);
+    const int32_t panelH = std::min<int32_t>(300, h - 16);
+    // the rows are placed for a 300 pixel panel and scaled to the panel height
+    auto row = [panelH](int32_t y) { return y * panelH / 300; };
+    // narrow screens: a smaller margin, switches and label column, so the labels fit
+    const bool narrow = w < 200;
+    const int32_t pad = narrow ? 4 : 12;
+    const int32_t switchW = narrow ? 44 : 52, switchH = narrow ? 26 : 32;
+    const tinymd::Bounds panel(pad, (h - panelH) / 2, w - 2 * pad, panelH);
     settings_ = tinymd::Container<RGB_T>(panel);
     settingsBackground_ = tinymd::Card<RGB_T>(panel);
     settings_.addChild(settingsBackground_);
 
-    const int32_t rowX = panel.x + 16;
-    const int32_t labelW = panel.w - 32 - 60;
-    settingsTitle_ = tinymd::Label<RGB_T>(tinymd::Bounds(rowX, panel.y + 12, panel.w - 32, 32), "Settings",
+    const int32_t rowX = panel.x + (narrow ? 8 : 16);
+    const int32_t labelW = panel.w - (narrow ? 16 : 32) - switchW - 8;
+    settingsTitle_ = tinymd::Label<RGB_T>(tinymd::Bounds(rowX, panel.y + row(12), panel.w - 32, 32), "Settings",
                                           tinymd::TypographyRole::kTitle);
-    darkLabel_ = tinymd::Label<RGB_T>(tinymd::Bounds(rowX, panel.y + 60, labelW, 32), "Dark mode");
-    darkSwitch_ = tinymd::Switch<RGB_T>(tinymd::Bounds(rowX + labelW + 8, panel.y + 60, 52, 32), dark_);
+    darkLabel_ = tinymd::Label<RGB_T>(tinymd::Bounds(rowX, panel.y + row(60), labelW, 32), "Dark mode");
+    darkSwitch_ = tinymd::Switch<RGB_T>(tinymd::Bounds(rowX + labelW + 8, panel.y + row(60), switchW, switchH), dark_);
     darkSwitch_.onChange = [this](bool on) { setDark(on); };
     buttonsLabel_ =
-        tinymd::Label<RGB_T>(tinymd::Bounds(rowX, panel.y + 112, labelW, 32), "Navigation buttons");
+        tinymd::Label<RGB_T>(tinymd::Bounds(rowX, panel.y + row(112), labelW, 32), "Navigation buttons");
     buttonsSwitch_ =
-        tinymd::Switch<RGB_T>(tinymd::Bounds(rowX + labelW + 8, panel.y + 112, 52, 32), buttonsVisible_);
+        tinymd::Switch<RGB_T>(tinymd::Bounds(rowX + labelW + 8, panel.y + row(112), switchW, switchH), buttonsVisible_);
     buttonsSwitch_.onChange = [this](bool on) { setButtonsVisible(on); };
     pageNumberRowLabel_ =
-        tinymd::Label<RGB_T>(tinymd::Bounds(rowX, panel.y + 164, labelW, 32), "Page number");
+        tinymd::Label<RGB_T>(tinymd::Bounds(rowX, panel.y + row(164), labelW, 32), "Page number");
     pageNumberSwitch_ =
-        tinymd::Switch<RGB_T>(tinymd::Bounds(rowX + labelW + 8, panel.y + 164, 52, 32), pageNumberVisible_);
+        tinymd::Switch<RGB_T>(tinymd::Bounds(rowX + labelW + 8, panel.y + row(164), switchW, switchH), pageNumberVisible_);
     pageNumberSwitch_.onChange = [this](bool on) { setPageNumberVisible(on); };
-    settingsHint_ = tinymd::Label<RGB_T>(tinymd::Bounds(rowX, panel.y + 208, panel.w - 32, 40),
+    // the hint stays above the Done button (see below)
+    const int32_t hintY = std::min<int32_t>(panel.y + row(208), panel.bottom() - (narrow ? 8 : 12) - (narrow ? 32 : 40) - 28);
+    settingsHint_ = tinymd::Label<RGB_T>(tinymd::Bounds(rowX, hintY, panel.w - 32, 24),
                                          "Swipe the text to turn pages.",
                                          tinymd::TypographyRole::kLabel);
-    settingsDone_ = tinymd::Button<RGB_T>(tinymd::Bounds(panel.right() - 116, panel.bottom() - 52, 100, 40),
-                                          "Done", tinymd::ButtonVariant::kText);
+    // on a very short panel the hint would cover the last row: it is left out
+    settingsHint_.visible = hintY >= panel.y + row(164) + 40;
+    // the Done button sits in the bottom right corner of the panel, and the hint
+    // above it ends before the button
+    const int32_t doneW = std::min<int32_t>(100, panel.w / 2), doneH = narrow ? 32 : 40;
+    const int32_t doneX = panel.right() - (narrow ? 8 : 16) - doneW;
+    const int32_t doneY = panel.bottom() - (narrow ? 8 : 12) - doneH;
+    settingsDone_ = tinymd::Button<RGB_T>(tinymd::Bounds(doneX, doneY, doneW, doneH), "Done", tinymd::ButtonVariant::kText);
     settingsDone_.onClick = [this]() { app_.screen().dismissDialog(); };
 
     settings_.addChild(settingsTitle_);
@@ -696,8 +730,8 @@ class MobiReaderApp {
   void openBookmarks() {
     const int32_t w = app_.width();
     const int32_t h = app_.height();
-    const tinymd::Bounds panel(8, kTitleHeight + 4, w - 16, h - kTitleHeight - 12);
-    const tinymd::Bounds row0(panel.x + 8, panel.y + 8, panel.w - 16, kRowHeight);
+    const tinymd::Bounds panel(8, titleHeight() + 4, w - 16, h - titleHeight() - 12);
+    const tinymd::Bounds row0(panel.x + 8, panel.y + 8, panel.w - 16, rowHeight());
     bookmarkRows_.clear();
     bookmarksPanel_ = tinymd::Container<RGB_T>(panel);
     bookmarksBackground_ = tinymd::Card<RGB_T>(panel);
@@ -712,8 +746,8 @@ class MobiReaderApp {
     };
 
     addRow(row0, "Close", [this]() { app_.screen().dismissDialog(); });
-    int32_t y = row0.y + kRowHeight + 4;
-    addRow(tinymd::Bounds(row0.x, y, row0.w, kRowHeight), "Add bookmark - page " + std::to_string(pageNumber()),
+    int32_t y = row0.y + rowHeight() + 4;
+    addRow(tinymd::Bounds(row0.x, y, row0.w, rowHeight()), "Add bookmark - page " + std::to_string(pageNumber()),
            [this]() {
              app_.screen().dismissDialog();
              if (bookmarks_.size() >= kMaxBookmarks) return;
@@ -722,13 +756,13 @@ class MobiReaderApp {
              b.label = "Page " + std::to_string(current_ + 1);
              bookmarks_.push_back(b);
            });
-    y += kRowHeight + 4;
+    y += rowHeight() + 4;
     for (size_t i = 0; i < bookmarks_.size(); ++i) {
-      addRow(tinymd::Bounds(row0.x, y, row0.w, kRowHeight), bookmarks_[i].label, [this, i]() {
+      addRow(tinymd::Bounds(row0.x, y, row0.w, rowHeight()), bookmarks_[i].label, [this, i]() {
         app_.screen().dismissDialog();
         goTo(bookmarks_[i].start);
       });
-      y += kRowHeight;
+      y += rowHeight();
     }
     app_.screen().presentDialog(bookmarksPanel_);
   }
@@ -771,13 +805,13 @@ class MobiReaderApp {
   void layout() {
     const int32_t w = app_.width();
     const int32_t h = app_.height();
-    appBar_.bounds = tinymd::Bounds(0, 0, w, kTitleHeight);
+    appBar_.bounds = tinymd::Bounds(0, 0, w, titleHeight());
     menuButton_.bounds = appBar_.trailingRect();
     text_.bounds = textBounds();
     pageLabel_.bounds = pageLabelBounds(pageLabel_.bounds.w);
-    const int32_t buttonY = h - kNavHeight + 8;
-    prev_.bounds = tinymd::Bounds(kMargin, buttonY, kButtonWidth, 40);
-    next_.bounds = tinymd::Bounds(w - kMargin - kButtonWidth, buttonY, kButtonWidth, 40);
+    const int32_t buttonY = h - navBarHeight() + 8;
+    prev_.bounds = tinymd::Bounds(kMargin, buttonY, buttonWidth(), 40);
+    next_.bounds = tinymd::Bounds(w - kMargin - buttonWidth(), buttonY, buttonWidth(), 40);
   }
 
   /// \brief The area for the text of the shown page: below the title bar, and
@@ -786,13 +820,13 @@ class MobiReaderApp {
   tinymd::Bounds textBounds() const {
     const int32_t w = app_.width();
     const int32_t h = app_.height();
-    const int32_t top = kTitleHeight + kMargin;
+    const int32_t top = titleHeight() + kMargin;
     const int32_t bottom = h - navHeight() - kMargin;
     return tinymd::Bounds(kMargin, top, w - 2 * kMargin, bottom - top);
   }
 
   /// \brief The height of the navigation buttons at the bottom (0 if they are hidden).
-  int32_t navHeight() const { return buttonsVisible_ ? kNavHeight : 0; }
+  int32_t navHeight() const { return buttonsVisible_ ? navBarHeight() : 0; }
 
 
   /// \brief Shows the cover page or the text page, with the bars that belong to it.
