@@ -201,16 +201,22 @@ class tinymobi::MobiReaderApp&lt; RGB_T, Doc &gt;</div><p>The book reader GUI fo
 <li>Settings: dark mode (on by default) and navigation buttons (off by default).</li>
 </ul>
 <p>The page text is read from the document with read() in plain text mode and cut so that it fits the text area. Each page start is remembered, so <a class="el" href="classtinymobi_1_1MobiReaderApp.html#ae6ea45ecd8f9724c887b83c96b0e1dcf" title="Shows the previous page, if there is one.">previous()</a> works after <a class="el" href="classtinymobi_1_1MobiReaderApp.html#a0ca5a3e090da92a6788d7c73d7c9a592" title="Shows the next page, if there is one.">next()</a>. <a class="el" href="classtinymobi_1_1MobiReaderApp.html#ad0d16907a5edad154a081566ae955d2d" title="Starts a new page sequence at position p (e.g. a table of contents entry).">goTo()</a> starts a new page sequence, e.g. at a table of contents entry.</p>
-<p>Usage: </p><div class="fragment"><div class="line"><a class="code hl_class" href="classtinymobi_1_1MobiDocument.html">FileMobi&lt;File&gt;</a> doc{<a class="code hl_class" href="classtinymobi_1_1StreamSource.html">StreamSource&lt;File&gt;</a>(file)};</div>
-<div class="line"><a class="code hl_class" href="classtinymobi_1_1MobiReaderApp.html">MobiReaderApp&lt;RGB565, FileMobi&lt;File&gt;</a>&gt; gui(DefaultBoard, doc);</div>
+<p>Usage: </p><div class="fragment"><div class="line">  <a class="code hl_class" href="classtinymobi_1_1MobiDocument.html">FileMobi&lt;File&gt;</a> doc{<a class="code hl_class" href="classtinymobi_1_1StreamSource.html">StreamSource&lt;File&gt;</a>(file)};</div>
+<div class="line">  <a class="code hl_class" href="classtinymobi_1_1MobiReaderApp.html">MobiReaderApp&lt;RGB565, FileMobi&lt;File&gt;</a>&gt; gui(DefaultBoard, doc);</div>
 <div class="line"> </div>
-<div class="line"><span class="keywordtype">void</span> setup() {</div>
-<div class="line">  doc.open();   <span class="comment">// the document must be open</span></div>
-<div class="line">  gui.begin();</div>
-<div class="line">}</div>
-<div class="line"><span class="keywordtype">void</span> loop() { gui.update(); }</div>
+<div class="line">A landscape panel can show the UI rotated by 90 degrees (portrait). Wrap the</div>
+<div class="line">board in TinyGPU<span class="stringliteral">&#39;s LCDBoardRotated, which rotates in hardware if the display</span></div>
+<div class="line"><span class="stringliteral">driver supports it and in software otherwise:</span></div>
+<div class="line"><span class="stringliteral">  tinygpu::LCDBoardRotated rotated(DefaultBoard);</span></div>
+<div class="line"><span class="stringliteral">  MobiReaderApp&lt;RGB565, FileMobi&lt;File&gt;&gt; gui(rotated, doc);</span></div>
+<div class="line"><span class="stringliteral"></span> </div>
+<div class="line"><span class="stringliteral">  void setup() {</span></div>
+<div class="line"><span class="stringliteral">    doc.open();   // the document must be open</span></div>
+<div class="line"><span class="stringliteral">    gui.begin();</span></div>
+<div class="line"><span class="stringliteral">  }</span></div>
+<div class="line"><span class="stringliteral">  void loop() { gui.update(); }</span></div>
 <div class="ttc" id="aclasstinymobi_1_1MobiDocument_html"><div class="ttname"><a href="classtinymobi_1_1MobiDocument.html">tinymobi::MobiDocument</a></div><div class="ttdoc">MOBI document parser and text stream.</div><div class="ttdef"><b>Definition</b> TinyMobi.h:370</div></div>
-<div class="ttc" id="aclasstinymobi_1_1MobiReaderApp_html"><div class="ttname"><a href="classtinymobi_1_1MobiReaderApp.html">tinymobi::MobiReaderApp</a></div><div class="ttdoc">The book reader GUI for TinyMaterialDesign: a full screen JPEG cover, then the book text one page at ...</div><div class="ttdef"><b>Definition</b> MobiReaderApp.h:67</div></div>
+<div class="ttc" id="aclasstinymobi_1_1MobiReaderApp_html"><div class="ttname"><a href="classtinymobi_1_1MobiReaderApp.html">tinymobi::MobiReaderApp</a></div><div class="ttdoc">The book reader GUI for TinyMaterialDesign: a full screen JPEG cover, then the book text one page at ...</div><div class="ttdef"><b>Definition</b> MobiReaderApp.h:73</div></div>
 <div class="ttc" id="aclasstinymobi_1_1StreamSource_html"><div class="ttname"><a href="classtinymobi_1_1StreamSource.html">tinymobi::StreamSource</a></div><div class="ttdoc">Source backed by any seekable file with size(), seek(pos) and read(buf, n), e.g. Arduino File (SD,...</div><div class="ttdef"><b>Definition</b> TinyMobi.h:339</div></div>
 </div><!-- fragment --><p>Limitations: the text pages are not scrolled. A single word that is taller than the text area is clipped. At most kMaxPages pages can be reached. Bookmarks are kept for the session only. Links that cannot be resolved are shown as plain text. </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
