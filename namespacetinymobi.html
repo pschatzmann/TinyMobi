@@ -167,6 +167,8 @@ Enumerations</h2></td></tr>
 , <a class="el" href="namespacetinymobi.html#ad714d9b410c68f0f159881d3a783eb33ad19eeaa000d448bf0888dafe16d30502">kHeadBegin</a> = 0x04
 , <br />
 &#160;&#160;<a class="el" href="namespacetinymobi.html#ad714d9b410c68f0f159881d3a783eb33a65c925fcaa345a6c9c6043e0c007fa4b">kHeadEnd</a> = 0x05
+, <a class="el" href="namespacetinymobi.html#ad714d9b410c68f0f159881d3a783eb33ae885128ad8b7960230eb11d7f113b370">kImageBegin</a> = 0x06
+, <a class="el" href="namespacetinymobi.html#ad714d9b410c68f0f159881d3a783eb33a30582783cbb74350edfae829296ac87f">kImageEnd</a> = 0x07
 <br />
  }</td></tr>
 <tr class="memdesc:ad714d9b410c68f0f159881d3a783eb33"><td class="mdescLeft">&#160;</td><td class="mdescRight">Markers used by TextMode::PlainLinks.  <a href="namespacetinymobi.html#ad714d9b410c68f0f159881d3a783eb33">More...</a><br /></td></tr>
@@ -191,6 +193,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a004b4fbbb8b706b0b74d922a7dd49053" id="r_a004b4fbbb8b706b0b74d922a7dd49053"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacetinymobi.html#abb9e12cb80a24306c79f6c8a9281ea60">ImageType</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacetinymobi.html#a004b4fbbb8b706b0b74d922a7dd49053">imageType</a> (const uint8_t *data, size_t len)</td></tr>
 <tr class="memdesc:a004b4fbbb8b706b0b74d922a7dd49053"><td class="mdescLeft">&#160;</td><td class="mdescRight">Detects the image format from the first bytes of a record.  <br /></td></tr>
 <tr class="separator:a004b4fbbb8b706b0b74d922a7dd49053"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aacd5e5391199a7208c39b834235e22e7" id="r_aacd5e5391199a7208c39b834235e22e7"><td class="memTemplParams" colspan="2">template&lt;typename RGB_T &gt; </td></tr>
+<tr class="memitem:aacd5e5391199a7208c39b834235e22e7"><td class="memTemplItemLeft" align="right" valign="top">std::shared_ptr&lt; tinygpu::Surface&lt; RGB_T &gt; &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacetinymobi.html#aacd5e5391199a7208c39b834235e22e7">decodeImageFit</a> (const uint8_t *data, size_t n, size_t maxW, size_t maxH)</td></tr>
+<tr class="separator:aacd5e5391199a7208c39b834235e22e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
@@ -267,6 +272,8 @@ template&lt;typename File &gt; </div>
 <tr><td class="fieldname"><a id="ad714d9b410c68f0f159881d3a783eb33a8e48b25d261bc6164677f9708d2fe9c8" name="ad714d9b410c68f0f159881d3a783eb33a8e48b25d261bc6164677f9708d2fe9c8"></a>kLinkEnd&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="ad714d9b410c68f0f159881d3a783eb33ad19eeaa000d448bf0888dafe16d30502" name="ad714d9b410c68f0f159881d3a783eb33ad19eeaa000d448bf0888dafe16d30502"></a>kHeadBegin&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="ad714d9b410c68f0f159881d3a783eb33a65c925fcaa345a6c9c6043e0c007fa4b" name="ad714d9b410c68f0f159881d3a783eb33a65c925fcaa345a6c9c6043e0c007fa4b"></a>kHeadEnd&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="ad714d9b410c68f0f159881d3a783eb33ae885128ad8b7960230eb11d7f113b370" name="ad714d9b410c68f0f159881d3a783eb33ae885128ad8b7960230eb11d7f113b370"></a>kImageBegin&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="ad714d9b410c68f0f159881d3a783eb33a30582783cbb74350edfae829296ac87f" name="ad714d9b410c68f0f159881d3a783eb33a30582783cbb74350edfae829296ac87f"></a>kImageEnd&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
 </div>
@@ -383,6 +390,49 @@ template&lt;typename File &gt; </div>
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
+<a id="aacd5e5391199a7208c39b834235e22e7" name="aacd5e5391199a7208c39b834235e22e7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aacd5e5391199a7208c39b834235e22e7">&#9670;&#160;</a></span>decodeImageFit()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename RGB_T &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">std::shared_ptr&lt; tinygpu::Surface&lt; RGB_T &gt; &gt; tinymobi::decodeImageFit </td>
+          <td>(</td>
+          <td class="paramtype">const uint8_t *&#160;</td>
+          <td class="paramname"><em>data</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>maxW</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>maxH</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Decodes a JPEG, PNG or GIF image and scales it to fit maxW x maxH, keeping the proportions. Images are not enlarged. Returns null if the data is not an image this reads, or if it is corrupt. </p>
+
+</div>
+</div>
 <a id="a9e206b7816057c49f21155c52440a211" name="a9e206b7816057c49f21155c52440a211"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a9e206b7816057c49f21155c52440a211">&#9670;&#160;</a></span>errorName()</h2>
 

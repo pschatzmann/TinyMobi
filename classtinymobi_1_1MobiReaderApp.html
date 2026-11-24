@@ -196,7 +196,7 @@ Static Public Attributes</h2></td></tr>
 class tinymobi::MobiReaderApp&lt; RGB_T, Doc &gt;</div><p>The book reader GUI for TinyMaterialDesign: a full screen JPEG cover, then the book text one page at a time. </p>
 <ul>
 <li>Cover: the JPEG cover of the book (if it has one), shown full screen before the first page. A tap or a swipe to the left opens the text.</li>
-<li>Text: a title bar with the book title, the page number (optional, see the settings) and a system menu (the menu icon in the title bar), and the text of the page. Pages are turned by swiping left (next) and right (previous). The Previous and Next buttons are optional (see the settings).</li>
+<li>Text: a title bar with the book title, the page number (optional, see the settings) and a system menu (the menu icon in the title bar), and the text of the page. Images in the text are shown scaled to the text width, and a tap shows one full screen. Pages are turned by swiping left (next) and right (previous). The Previous and Next buttons are optional (see the settings).</li>
 <li>System menu: "Go to start", "Bookmarks" (add the shown page, jump to saved bookmarks), "Settings", "About" (author, publisher and language) and, if onClose is set, "Close". The table of contents is part of the text: its links jump to the chapters (see <a class="el" href="namespacetinymobi.html#a66430432639a8de303ef8eb59cf10a7aaa42c5716494d5fe896048b3fb603a451">TextMode::PlainLinks</a>).</li>
 <li>Settings: dark mode (on by default) and navigation buttons (off by default).</li>
 </ul>
@@ -215,9 +215,9 @@ class tinymobi::MobiReaderApp&lt; RGB_T, Doc &gt;</div><p>The book reader GUI fo
 <div class="line"><span class="stringliteral">    gui.begin();</span></div>
 <div class="line"><span class="stringliteral">  }</span></div>
 <div class="line"><span class="stringliteral">  void loop() { gui.update(); }</span></div>
-<div class="ttc" id="aclasstinymobi_1_1MobiDocument_html"><div class="ttname"><a href="classtinymobi_1_1MobiDocument.html">tinymobi::MobiDocument</a></div><div class="ttdoc">MOBI document parser and text stream.</div><div class="ttdef"><b>Definition</b> TinyMobi.h:370</div></div>
-<div class="ttc" id="aclasstinymobi_1_1MobiReaderApp_html"><div class="ttname"><a href="classtinymobi_1_1MobiReaderApp.html">tinymobi::MobiReaderApp</a></div><div class="ttdoc">The book reader GUI for TinyMaterialDesign: a full screen JPEG cover, then the book text one page at ...</div><div class="ttdef"><b>Definition</b> MobiReaderApp.h:73</div></div>
-<div class="ttc" id="aclasstinymobi_1_1StreamSource_html"><div class="ttname"><a href="classtinymobi_1_1StreamSource.html">tinymobi::StreamSource</a></div><div class="ttdoc">Source backed by any seekable file with size(), seek(pos) and read(buf, n), e.g. Arduino File (SD,...</div><div class="ttdef"><b>Definition</b> TinyMobi.h:339</div></div>
+<div class="ttc" id="aclasstinymobi_1_1MobiDocument_html"><div class="ttname"><a href="classtinymobi_1_1MobiDocument.html">tinymobi::MobiDocument</a></div><div class="ttdoc">MOBI document parser and text stream.</div><div class="ttdef"><b>Definition</b> TinyMobi.h:373</div></div>
+<div class="ttc" id="aclasstinymobi_1_1MobiReaderApp_html"><div class="ttname"><a href="classtinymobi_1_1MobiReaderApp.html">tinymobi::MobiReaderApp</a></div><div class="ttdoc">The book reader GUI for TinyMaterialDesign: a full screen JPEG cover, then the book text one page at ...</div><div class="ttdef"><b>Definition</b> MobiReaderApp.h:74</div></div>
+<div class="ttc" id="aclasstinymobi_1_1StreamSource_html"><div class="ttname"><a href="classtinymobi_1_1StreamSource.html">tinymobi::StreamSource</a></div><div class="ttdoc">Source backed by any seekable file with size(), seek(pos) and read(buf, n), e.g. Arduino File (SD,...</div><div class="ttdef"><b>Definition</b> TinyMobi.h:342</div></div>
 </div><!-- fragment --><p>Limitations: the text pages are not scrolled. A single word that is taller than the text area is clipped. At most kMaxPages pages can be reached. Bookmarks are kept for the session only. Links that cannot be resolved are shown as plain text. </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="afe055c06ab2162c0a5b6f558168e493c" name="afe055c06ab2162c0a5b6f558168e493c"></a>

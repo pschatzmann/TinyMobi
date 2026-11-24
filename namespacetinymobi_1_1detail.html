@@ -109,6 +109,12 @@ Functions</h2></td></tr>
 <tr class="separator:ab176157c1e7b8b52aff70a3fa91a1f5b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a522d702953a58e53e2000cb6ce3f8601" id="r_a522d702953a58e53e2000cb6ce3f8601"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacetinymobi_1_1detail.html#a522d702953a58e53e2000cb6ce3f8601">isAsciiAlpha</a> (uint8_t c)</td></tr>
 <tr class="separator:a522d702953a58e53e2000cb6ce3f8601"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac321b9c5bd11c601f99f8c851efd9a7d" id="r_ac321b9c5bd11c601f99f8c851efd9a7d"><td class="memTemplParams" colspan="2">template&lt;typename RGB_T &gt; </td></tr>
+<tr class="memitem:ac321b9c5bd11c601f99f8c851efd9a7d"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacetinymobi_1_1detail.html#ac321b9c5bd11c601f99f8c851efd9a7d">writeJpegBlock</a> (tinyjpeg::TinyJPEGDecoder &amp;decoder, int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t *data)</td></tr>
+<tr class="separator:ac321b9c5bd11c601f99f8c851efd9a7d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abe3476482c1d8738678b398574973862" id="r_abe3476482c1d8738678b398574973862"><td class="memTemplParams" colspan="2">template&lt;typename RGB_T &gt; </td></tr>
+<tr class="memitem:abe3476482c1d8738678b398574973862"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacetinymobi_1_1detail.html#abe3476482c1d8738678b398574973862">decodeJpegFull</a> (const uint8_t *data, size_t n, tinygpu::Surface&lt; RGB_T &gt; &amp;dst)</td></tr>
+<tr class="separator:abe3476482c1d8738678b398574973862"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
 <a id="ad98901955f3b618c86bc0ea2142cb88b" name="ad98901955f3b618c86bc0ea2142cb88b"></a>
@@ -188,6 +194,42 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>CP1252 0x80..0x9F mapping (0xA0..0xFF map 1:1 to Unicode). </p>
+
+</div>
+</div>
+<a id="abe3476482c1d8738678b398574973862" name="abe3476482c1d8738678b398574973862"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abe3476482c1d8738678b398574973862">&#9670;&#160;</a></span>decodeJpegFull()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename RGB_T &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">bool tinymobi::detail::decodeJpegFull </td>
+          <td>(</td>
+          <td class="paramtype">const uint8_t *&#160;</td>
+          <td class="paramname"><em>data</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">tinygpu::Surface&lt; RGB_T &gt; &amp;&#160;</td>
+          <td class="paramname"><em>dst</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
 
 </div>
 </div>
@@ -381,6 +423,60 @@ Functions</h2></td></tr>
 <span class="mlabels"><span class="mlabel">inline</span></span>  </td>
   </tr>
 </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ac321b9c5bd11c601f99f8c851efd9a7d" name="ac321b9c5bd11c601f99f8c851efd9a7d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac321b9c5bd11c601f99f8c851efd9a7d">&#9670;&#160;</a></span>writeJpegBlock()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename RGB_T &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">bool tinymobi::detail::writeJpegBlock </td>
+          <td>(</td>
+          <td class="paramtype">tinyjpeg::TinyJPEGDecoder &amp;&#160;</td>
+          <td class="paramname"><em>decoder</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int16_t&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int16_t&#160;</td>
+          <td class="paramname"><em>y</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint16_t&#160;</td>
+          <td class="paramname"><em>w</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint16_t&#160;</td>
+          <td class="paramname"><em>h</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint16_t *&#160;</td>
+          <td class="paramname"><em>data</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
 </div><div class="memdoc">
 
 </div>

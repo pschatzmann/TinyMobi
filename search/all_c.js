@@ -7,9 +7,10 @@ var searchData=
   ['metadata_4',['metadata',['../structtinymobi_1_1Metadata.html',1,'tinymobi::Metadata'],['../classtinymobi_1_1MobiDocument.html#a9f27422429496b9f5a834fafe2b33853',1,'tinymobi::MobiDocument::metadata()']]],
   ['mobicover_5',['MobiCover',['../classtinymobi_1_1MobiCover.html',1,'tinymobi']]],
   ['mobicover_3c_20tinymd_5fdefault_5frgb_5ft_2c_20memorymobi_20_3e_6',['MobiCover&lt; TINYMD_DEFAULT_RGB_T, MemoryMobi &gt;',['../classtinymobi_1_1MobiCover.html',1,'tinymobi']]],
-  ['mobidocument_7',['mobidocument',['../classtinymobi_1_1MobiDocument.html',1,'tinymobi::MobiDocument&lt; Source, RecordBufferSize, WithKf8 &gt;'],['../classtinymobi_1_1MobiDocument.html#acc10e15cf1b918f0c7909d9b09746c39',1,'tinymobi::MobiDocument::MobiDocument()']]],
+  ['mobidocument_7',['mobidocument',['../classtinymobi_1_1MobiDocument.html#acc10e15cf1b918f0c7909d9b09746c39',1,'tinymobi::MobiDocument::MobiDocument()'],['../classtinymobi_1_1MobiDocument.html',1,'tinymobi::MobiDocument&lt; Source, RecordBufferSize, WithKf8 &gt;']]],
   ['mobireaderapp_8',['mobireaderapp',['../classtinymobi_1_1MobiReaderApp.html',1,'tinymobi::MobiReaderApp&lt; RGB_T, Doc &gt;'],['../classtinymobi_1_1MobiReaderApp.html#afe055c06ab2162c0a5b6f558168e493c',1,'tinymobi::MobiReaderApp::MobiReaderApp()']]],
   ['mobireaderapp_2eh_9',['MobiReaderApp.h',['../MobiReaderApp_8h.html',1,'']]],
   ['mobireadercover_2eh_10',['MobiReaderCover.h',['../MobiReaderCover_8h.html',1,'']]],
-  ['mobiversion_11',['mobiVersion',['../structtinymobi_1_1Info.html#a65cefd61101b88ec73231b7d9d2160d5',1,'tinymobi::Info']]]
+  ['mobireaderimage_2eh_11',['MobiReaderImage.h',['../MobiReaderImage_8h.html',1,'']]],
+  ['mobiversion_12',['mobiVersion',['../structtinymobi_1_1Info.html#a65cefd61101b88ec73231b7d9d2160d5',1,'tinymobi::Info']]]
 ];
